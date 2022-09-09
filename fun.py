@@ -66,7 +66,7 @@ if __name__=="__main__":
 	scrollText("Start of the academic year is approaching.\n")
 	scrollText("Professor McGonagall asserted the situation: impossible for Hogwarts \nnot to welcome new students...\n")
 	scrollText("She decides to call you, a \"datascientist\" muggle, capable of working \nmiracles with this tool that all muggles use: a \"computer\".\n")
-	scrollText("Despite the reluctance of many sorcerers, the principal of the school \nwelcomes you in her office to explain the situation. The reason \nyou’re here is because her contact revealed that you’re \ncapable of recreating a magical Choixpeau using your muggly tools \nalone.\n")
+	scrollText("Despite the reluctance of many sorcerers, the principal of the school \nwelcomes you in her office to explain the situation. The reason \nyou’re here is because her contact revealed that you’re \ncapable of recreating a magical Sorting Hat using your muggly tools \nalone.\n")
 	scrollText("You agree. You explain that for \"magic\" to work, you must retrieve \nstudent data. McGonagall then gives you a dusty grimoire. Fortunately \nfor you, a simple \"Digitalis!\" and the book changes into a flash \ndrive...\n")
 
 	time.sleep(2)
