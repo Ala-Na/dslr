@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from utils.dataframe_manip import *
+import warnings
 
 # https://stats.stackexchange.com/questions/562203/normalizing-and-scaling-are-different
 # https://towardsdatascience.com/histograms-and-density-plots-in-python-f6bda88f5ac0
@@ -47,6 +48,9 @@ def drawStrongCorrelation(df: pd.DataFrame, features: list, \
 	ax.legend()
 
 if __name__ == '__main__':
+	# Just to shut up a deprecation warning from numpy which appeared in the middle of my project
+	warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+
 	print("Which subjects/features are similar or correlated ?")
 
 	print("We can display relationship of quantitative features with a scatter plot.")
@@ -56,16 +60,15 @@ if __name__ == '__main__':
 	df = get_dataframe('./datasets/dataset_train.csv')
 	df = df.drop('Index', axis=1)
 	numerics_df = get_numerics(df)
-	normalized_df = get_mean_normalized(df, numerics_df)
 	houses = get_houses_list(df)
 	colors = ['red', 'yellow', 'blue', 'green']
-	
+
 	fig, axs = plt.subplots(10, 8, figsize=(30, 20))
 	fig.suptitle('Relationship between marks\' subjects')
 	idx = 0
 	for i, feature1 in enumerate(numerics_df.columns):
 		for feature2 in numerics_df.columns[i + 1:]:
-			drawScatterPlotCorrelation(normalized_df, feature1, feature2, houses, colors, axs[int(idx / 8) % 10, idx % 8])
+			drawScatterPlotCorrelation(df, feature1, feature2, houses, colors, axs[int(idx / 8) % 10, idx % 8])
 			idx += 1
 	axs[-1, -1].axis('off')
 	axs[-1, -2].axis('off')
@@ -83,7 +86,7 @@ if __name__ == '__main__':
 	features=['Defense Against the Dark Arts', 'Astronomy']
 	fig, axs = plt.subplots(1, figsize=(30, 20))
 	fig.suptitle('Strongest marks subjects correlation')
-	drawStrongCorrelation(normalized_df, features, houses, colors, axs)
+	drawStrongCorrelation(df, features, houses, colors, axs)
 	plt.show()
 
 	print("What does it mean for our Sorting Hat algorithm ?")
@@ -91,4 +94,3 @@ if __name__ == '__main__':
 
 	print("Another advantage of scatter plot is that it can help detect outliers values in multivariate settings.")
 	print("It'll look like points anormaly far from the others. Here, it seems okay, though we could see from previous boxplot that they were some outliers for 2 lessons.")
-	

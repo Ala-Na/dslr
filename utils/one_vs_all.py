@@ -2,8 +2,9 @@ from utils.dataframe_manip import *
 from utils.logistic_regression import *
 from utils.logistic_scores import *
 from utils.array_manip import *
-import pandas as pd
 import numpy as np
+import os
+import sklearn.metrics
 
 class OneVsAll():
 
@@ -19,7 +20,7 @@ class OneVsAll():
 		assert isinstance(max_y_val, int) and max_y_val > 0
 		assert isinstance(default_theta, list or np.ndarray)
 		self.max_y_val = max_y_val
-		self.submodels = []		
+		self.submodels = []
 		for _ in range(0, max_y_val):
 			self.submodels.append(LogisticRegression(theta=default_theta, \
 				alpha=alpha, max_iter=max_iter, penalty=penalty, \
@@ -41,10 +42,7 @@ class OneVsAll():
 			else:
 				self.submodels[value].gradient_descent(x_train, y_train_tmp, \
 					batch_size=batch_size)
-			print(y_train_tmp[:5])
 			y_hat = np.round(self.submodels[value].predict(x_train))
-			# Accuracy on training set
-			print(sklearn.metrics.accuracy_score(y_train_tmp, y_hat))
 		if y_val is not None and x_val is not None:
 			return mse
 
@@ -58,4 +56,29 @@ class OneVsAll():
 		thetas = []
 		for idx in range(0, self.max_y_val):
 			thetas.append(self.submodels[idx].theta)
-		return thetas	
+		return thetas
+
+	def save_values_npz(self, filepath='thetas.npz', means=None, stds=None) -> None:
+		if (os.path.isfile(filepath)):
+			os.remove(filepath)
+		thetas = self.get_thetas()
+		try:
+			if means is not None and stds is not None:
+				for idx in range(0, self.max_y_val):
+					thetas[idx] = thetas[idx] * stds[idx] - means[idx]
+			np.savez(filepath, thetas=thetas)
+		except:
+			print("\033[91mOops, can't save values in {} file.\033[0m".format(filepath))
+
+	def get_values_npz(self, filepath='thetas.npz', means=None, stds=None) -> None:
+		try:
+			values = np.load(filepath)
+			thetas = values['thetas']
+			if means is not None and stds is not None:
+				for idx in range(0, self.max_y_val):
+					thetas[idx] = (thetas[idx] - means[idx]) / stds[idx]
+			for idx in range(0, self.max_y_val):
+				self.submodels[idx].set_values(thetas[idx])
+		except:
+			print("\033[91mOops, can't get values from {} file.\033[0m".format(filepath))
+

@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from typing import Tuple
 
 def get_dataframe(filepath: str) -> pd.DataFrame:
 	try:
@@ -15,7 +16,8 @@ def get_dataframe(filepath: str) -> pd.DataFrame:
 def get_numerics(df: pd.DataFrame) -> pd.DataFrame:
 	return df.select_dtypes(include=np.number)
 
-def get_mean_normalized(df: pd.DataFrame, numerics_df: pd.DataFrame) -> pd.DataFrame:
+def get_mean_normalized(df: pd.DataFrame, numerics_df: pd.DataFrame) \
+		-> Tuple[pd.DataFrame, list, list]:
 	for column in numerics_df.columns:
 		df[column] = (df[column] - df[column].mean()) / df[column].std()
 	return df

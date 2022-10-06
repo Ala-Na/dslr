@@ -1,15 +1,15 @@
 import numpy as np
 from typing import Tuple
-import sklearn
+import os
 
 class LogisticRegression():
     """
     Description:
         My personnal logistic regression to classify things.
     """
-	
+
     supported_penalities = ['l2', None]
-	
+
     def __init__(self, theta: np.ndarray or list, alpha: float = 0.001, \
             max_iter: int = 1000, penalty: str ='l2', lambda_: float = 1.0) \
             -> None:
@@ -85,7 +85,7 @@ class LogisticRegression():
             batch_size: int or None = None) -> Tuple[list, list] or None:
         """
         Batch_size = 1 to run stochastic gradient descent
-        x_val and y_val : Validation set to stop training if stable, if not 
+        x_val and y_val : Validation set to stop training if stable, if not
         present, training will stop once a threshold of 1e-6 is reached between
         two thetas iteration. MSE on validation set is only checked each 100
         epochs to avoid slowing down the training.
@@ -148,3 +148,23 @@ class LogisticRegression():
             return None
         mse = ((y_hat - y) ** 2).mean(axis=None)
         return float(mse)
+
+    def save_values_npz(self, filepath='theta.npz') -> None:
+        if (os.path.isfile(filepath)):
+                os.remove(filepath)
+        try:
+            np.savez(filepath, theta=self.theta)
+        except:
+            print("\033[91mOops, can't save values in {} file.\033[0m".format(filepath))
+
+    def get_values_npz(self, filepath='theta.npz') -> None:
+        try:
+            values = np.load(filepath)
+            assert np.issubdtype(values['theta'].dtype, np.number) and values['theta'].shape == self.theta.shape
+            self.theta = values['theta']
+        except:
+            print("\033[91mOops, can't get values from {} file.\033[0m".format(filepath))
+
+    def set_values(self, theta) -> None:
+        assert np.issubdtype(theta.dtype, np.number) and theta.shape == self.theta.shape
+        self.theta = theta

@@ -54,7 +54,9 @@ def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 
 if __name__ == '__main__':
 
-	parser = argparse.ArgumentParser("Sorting Hat - Describe program")
+	# Check arguments given by user
+
+	parser = argparse.ArgumentParser("Sorting Hat - Program description")
 	parser.add_argument("dataset", type=str, help="File path of training dataset to describe (with valid reading permission)")
 	args = parser.parse_args()
 	filename = args.dataset.split("/")[-1]
@@ -70,40 +72,35 @@ if __name__ == '__main__':
 
 	print("Let's drop the column we saw had little impact previously : 'Arithmancy', 'Care of Magical Creatures' and finally 'Defense Against the Dark Arts'.")
 	print("We'll also drop non convertible datas columns like first and last name.")
-	
+
 	df = get_dataframe(args.dataset)
 	to_drop = ['Index', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts', 'Birthday', 'Best Hand', 'First Name', 'Last Name']
 	df = df.drop(to_drop, axis=1)
-
-	print("Let's normalize numericals values with mean normalization (z_score).")
-	print("We could use minmax normalization but it don't perform well with outliers and our dataset have some.")
-	print("Another option could be to use a robust scaler (x - first_quartil) / (third_quartil - first_quartil).")
 	numerics_df = get_numerics(df)
-	normalized_df = get_mean_normalized(df, numerics_df).copy()
 
 
 	print("Let's also convert Hogwarts House into a number value. 0 =  Gryffindor, 1 = Hufflepuff, ...")
-	houses = get_houses_list(normalized_df)
-	normalized_df['Hogwarts House'].replace(houses, [0, 1, 2, 3], inplace=True)
+	houses = get_houses_list(df)
+	df['Hogwarts House'].replace(houses, [0, 1, 2, 3], inplace=True)
 
 	print("We have NaN values in our dataset. As we now only have numerical values, we need to replace NaN with either mean or median if there's outliers.")
 	print("Let's detect features with outliers thanks to mean normalization (also called z_score) > 3 or < -3.")
 	for column in numerics_df.columns:
-		if normalized_df[column].isnull().values.any():
-			abs_z_score = normalized_df[column].abs()
+		if df[column].isnull().values.any():
+			abs_z_score = df[column].abs()
 			outliers =  abs_z_score > 3
 			outliers = np.asarray(abs_z_score[outliers])
 			if len(outliers) > 0:
 				print("Feature {} has {} outliers".format(column, len(outliers)))
-				normalized_df[column].fillna(value=normalized_df[column].median(), inplace=True)
+				df[column].fillna(value=df[column].median(), inplace=True)
 			else:
-				normalized_df[column].fillna(value=normalized_df[column].mean(), inplace=True)
+				df[column].fillna(value=df[column].mean(), inplace=True)
 
 	# Logistic regression
 
 	print("Okay ! Now we have a correct data set, and we have to perform logistic regression on it.")
 	print("It's basically a linear regression : We have a function under the format w1a1 + w2a2 + ... + b = y_hat.")
-	print("We want to find w and b values which make y_hat (prediction) closest as possible of targets y.") 
+	print("We want to find w and b values which make y_hat (prediction) closest as possible of targets y.")
 	print("We already know y (here, Hogwarts Houses) and we can calculate global distance between prediction and targets/expected results.")
 	print("For example, if we predict a student to be inside Slytherin but it's in truth a Ravenclaw, our distance will increase. If it's actually a Slytherin, it won't increase.")
 	print("But we do that on ALL examples of our data set.")
@@ -121,33 +118,53 @@ if __name__ == '__main__':
 	print("We will train our dataset on the training set and keep the testing set untouched to see if our model predict well on example it wasn't trained on.")
 	print("In other words, if we have a a high enough %% of good answers on our testing set, it means we can generalize our predictions and trust our model.")
 
+	# print("Let's normalize numericals values with mean normalization (z_score).")
+	# print("We could use minmax normalization but it don't perform well with outliers and our dataset have some.")
+	# print("Another option could be to use a robust scaler (x - first_quartil) / (third_quartil - first_quartil).")
+	# normalized_df = get_mean_normalized(df, numerics_df)
 
-	array = np.asarray(normalized_df)
+	array = np.asarray(df)
 	x, y = array[:, 1:], array[:, 0].reshape(-1, 1)
 	x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
+
+	print("Let's normalize numericals values with robust scaler (x - first_quartil) / (third_quartil - first_quartil).")
+	print("We could use minmax normalization but it don't perform well with outliers and our dataset have some.")
+	print("We could also use z_score (mean normalisation) but it doesn't perform well if some data are not following a gaussian distribution.")
+	print("It's important to perform scaling after splitting.")
+	x_train, fqrt, tqrt = scale(x_train, option='robust')
+	x_test, _ , _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
+	x, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
+
 	thetas = [1] * (x_train.shape[1] + 1)
-	algo = OneVsAll(thetas, max_y_val=4, alpha=0.01, max_iter=15000)
-	y_hat = algo.predict(x)
+	# TODO find better hyperparameters or optimization
+	algo = OneVsAll(thetas, max_y_val=4, alpha=0.005, max_iter=20000)
+
+	# It's not precised insubject if 98% is supposed to be on testing set or overall
+
+	y_hat = algo.predict(x_test)
 	i = 0
-	while i < 100 and sklearn.metrics.accuracy_score(y, y_hat) < 0.98:
+	while i < 100 and sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98:
 		if i != 0:
+			print("Trying again : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
 			algo = OneVsAll(thetas, max_y_val=4, alpha=0.0005, max_iter=15000)
 		algo.perform(x_train, y_train, x_test, y_test, 1)
-		y_hat = algo.predict(x)
+		y_hat = algo.predict(x_test)
 		i += 1
-	if (sklearn.metrics.accuracy_score(y, y_hat) < 0.98):
+	if (sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98):
 		print("Sorry... Couldn't reach 98% accuracy ... Try again.")
 		exit(1)
+
+	algo.save_values_npz()
 
 	print(LogisticScores.accuracy(y, y_hat))
 
 	print("We can see that our model accuracy is pretty good !")
 	print("Let's show our results on a graph with errors.")
 
-	prediction_df = normalized_df.copy()
+	prediction_df = df.copy()
 	prediction_df['Hogwarts House'] = y_hat
 	prediction_df['Hogwarts House'].replace([0, 1, 2, 3], houses, inplace=True)
-	original_df = normalized_df.copy()
+	original_df = df.copy()
 	original_df['Hogwarts House'] = df['Hogwarts House']
 	colors_ori = ['red', 'yellow', 'blue', 'green']
 	colors_predi = ['darkred', 'darkorange', 'navy', 'darkgreen']
@@ -155,13 +172,13 @@ if __name__ == '__main__':
 	prediction_df = prediction_df[diff]
 	original_df = original_df[diff]
 
-	normalized_df = normalized_df.drop('Hogwarts House', axis=1)
+	df = df.drop('Hogwarts House', axis=1)
 
 	fig, axs = plt.subplots(7, 7, figsize=(30, 20))
 	fig.suptitle('Classification errors')
 	idx = 0
-	for i, feature1 in enumerate(normalized_df.columns):
-		for feature2 in normalized_df.columns[i + 1:]:
+	for i, feature1 in enumerate(df.columns):
+		for feature2 in df.columns[i + 1:]:
 			drawScatterPlotCorrelation(original_df, prediction_df, \
 				feature1, feature2, houses, colors_ori, colors_predi, \
 				axs[int(idx / 7) % 7, idx % 7])

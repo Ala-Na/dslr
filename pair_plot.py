@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_selection import SelectKBest, f_classif
 from utils.dataframe_manip import *
+import warnings
 
 # Data engineering and feature selection
 # https://medium.com/nerd-for-tech/data-engineering-a-feature-selection-example-with-the-iris-dataset-11f0554e4b00
@@ -33,6 +34,8 @@ def drawScatterPlotCorrelation(df: pd.DataFrame, feat1: str, feat2: str, \
 		ax.scatter(x_house_array, y_house_array, color=color, alpha=0.1, label=house)
 
 if __name__ == '__main__':
+	# Just to shut up a deprecation warning from numpy which appeared in the middle of my project
+	warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 	# seaborn library has a pair plot function, but at 42 school there not a lot
 	# of space allowed to each user, so let's use matplotlib which is alreay present
@@ -42,11 +45,10 @@ if __name__ == '__main__':
 	df = get_dataframe('./datasets/dataset_train.csv')
 	df = df.drop('Index', axis=1)
 	numerics_df = get_numerics(df)
-	normalized_df = get_mean_normalized(df, numerics_df)
 	houses = get_houses_list(df)
 	colors = ['red', 'yellow', 'blue', 'green']
 
-	fig, axs = plt.subplots(13, 13, figsize=(30, 20))	
+	fig, axs = plt.subplots(13, 13, figsize=(30, 20))
 
 	fig.suptitle('Pair plot for numerical data')
 
@@ -55,9 +57,9 @@ if __name__ == '__main__':
 			axs[i, j].set_xticks([])
 			axs[i, j].set_yticks([])
 			if i == j:
-				drawFeatureHistogram(normalized_df, column_i, houses, colors, axs[i, j], 20)
+				drawFeatureHistogram(df, column_i, houses, colors, axs[i, j], 20)
 			else:
-				drawScatterPlotCorrelation(normalized_df, column_i, \
+				drawScatterPlotCorrelation(df, column_i, \
 					column_j, houses, colors, axs[i, j])
 			if j == 0:
 				label = column_i
@@ -80,7 +82,7 @@ if __name__ == '__main__':
 
 	print("What the use of that pair plot ?")
 	print("It can help us to gain some knowledge on our features, and to see if some are useless and can be left out for training our model.")
-	print("As seen with histogramm, for classificatio, we can left out feature with homogeneous distribution among all our classes as it won't help us discriminate.")
+	print("As seen with histogramm, for classification, we can left out feature with homogeneous distribution among all our classes as it won't help us discriminate.")
 	print("We also saw with scatter plot that when multiple features are correlated, we can keep only one of the correlated features.")
 	print("Here, we can see that some scattered plot pair don't separate the four classes very well.")
 	print("We could also check their covariance matrix, for each pair of Hogwarts houses, for each subject.")
@@ -88,7 +90,7 @@ if __name__ == '__main__':
 	# If possible download sklearn at 42
 
 	print("Let's confirm our suspicion with sklearn program to select best features.")
-	non_nan = normalized_df.select_dtypes(include=np.number)
+	non_nan = df.select_dtypes(include=np.number)
 	print("Here, I replace missing value (NaN) by mean, which may not always be the more adapted.")
 	non_nan = non_nan.fillna(non_nan.mean())
 	house_data = df['Hogwarts House'].copy()
@@ -117,7 +119,7 @@ if __name__ == '__main__':
 	df['Birth Year'] = df['Birthday'].dt.year
 	non_num_df = df[['Hogwarts House', 'Best Hand', 'Birth Day', 'Birth Month', 'Birth Year']]
 
-	fig, axs = plt.subplots(4, 4, figsize=(30, 20))	
+	fig, axs = plt.subplots(4, 4, figsize=(30, 20))
 	fig.suptitle('Pair plot for categorical data')
 	for i, column_i in enumerate(non_num_df.columns[1:]):
 		for j, column_j in enumerate(non_num_df.columns[1:]):
