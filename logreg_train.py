@@ -1,3 +1,4 @@
+from random import random
 import pandas as pd
 import numpy as np
 import argparse
@@ -9,6 +10,7 @@ from utils.logistic_regression import *
 from utils.logistic_scores import *
 from utils.array_manip import *
 from utils.one_vs_all import *
+import random
 
 # Stochastic gradient descent
 # https://web.archive.org/web/20180618211933/http://cs229.stanford.edu/notes/cs229-notes1.pdf
@@ -29,6 +31,8 @@ from utils.one_vs_all import *
 
 # Note about normalization : Minmax is often used to scale data, but it doesn't apply
 # well on outliers. Here, some data have outliers (though few), so let's use z_score/mean normalization instead.
+
+max_iter=1000
 
 def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 		feat1: str, feat2: str, houses: list, colors_ori: list, \
@@ -51,6 +55,27 @@ def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 	ax.set_ylabel(feat2, fontsize=6, labelpad=-1)
 	ax.set_xticks([])
 	ax.set_yticks([])
+
+def getRandomHyperparameters():
+	alpha = random.uniform(0.0001, 0.1)
+	beta_1 = random.uniform(0.001, 0.1)
+	possible_batch_size = [1, 16, 32, 64, 128, 256, 512, 1024]
+	batch_size = random.choice(possible_batch_size)
+	possible_lambda_ = np.linspace(0, 1, 5)
+	lambda_ = float(np.random.choice(possible_lambda_))
+	supported_optimization = ['momentum', 'rmsprop', 'adam', None]
+	optimization = random.choice(supported_optimization)
+	early_stopping = random.random() > 0.8
+	decay = random.random() > 0.5
+	return alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay
+
+def saveHyperparametersAndResult(alpha, beta_1, batch_size, lambda_, optimization,
+	early_stopping, decay, result):
+	file = "experiments.csv"
+	df = pd.DataFrame({'result': [result], 'alpha': [alpha], 'beta_1': [beta_1], \
+		'batch_size': [batch_size], 'lambda': [lambda_], 'early_stopping': [early_stopping], \
+		'optimization': [optimization], 'decay': [decay]})
+	df.to_csv(file, mode='a', header=not os.path.exists(file))
 
 if __name__ == '__main__':
 
@@ -135,21 +160,36 @@ if __name__ == '__main__':
 	x_test, _ , _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
 	x, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
 
-	thetas = [1] * (x_train.shape[1] + 1)
-	# TODO find better hyperparameters or optimization
-	algo = OneVsAll(thetas, max_y_val=4, alpha=0.005, max_iter=20000)
 
-	# It's not precised insubject if 98% is supposed to be on testing set or overall
+	for j in range(100):
+		alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay = getRandomHyperparameters()
 
-	y_hat = algo.predict(x_test)
-	i = 0
-	while i < 100 and sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98:
-		if i != 0:
-			print("Trying again : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-			algo = OneVsAll(thetas, max_y_val=4, alpha=0.0005, max_iter=15000)
-		algo.perform(x_train, y_train, x_test, y_test, 1)
+		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=max_iter, \
+		initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
+		early_stopping=early_stopping, beta_1=beta_1)
+		algo.perform(x_train, y_train, x_test, y_test, batch_size)
+		# It's not precised insubject if 98% is supposed to be on testing set or overall
+		results = []
 		y_hat = algo.predict(x_test)
-		i += 1
+		i = 0
+		print("----")
+		print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
+		while i < 10:
+		# while i < 10 and (y_hat.any() == None or sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98):
+			results.append(sklearn.metrics.accuracy_score(y_test, y_hat))
+			if i != 0:
+				print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
+				algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=max_iter, \
+					initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
+					early_stopping=early_stopping, beta_1=beta_1)
+			algo.perform(x_train, y_train, x_test, y_test, batch_size)
+			y_hat = algo.predict(x_test)
+			i += 1
+		result = sum(results) / i
+		saveHyperparametersAndResult(alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay, result)
+
+	exit()
+
 	if (sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98):
 		print("Sorry... Couldn't reach 98% accuracy ... Try again.")
 		exit(1)

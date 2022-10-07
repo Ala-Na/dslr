@@ -2,8 +2,6 @@ import numpy as np
 from typing import Tuple
 import os
 
-from symbol import parameters
-
 class LogisticRegression():
     ''' A logistic regression model'''
 
@@ -14,10 +12,10 @@ class LogisticRegression():
 
     def __init__(self, nb_features: int, initialization: str = 'random', \
             alpha: float = 0.001, beta_1: float = 0.9, beta_2: float = 0.99, \
-            epsilon: float = 1e-8, lambda_: float = 1.0, max_iter: int = 1000, \
+            epsilon: float = 1e-8, lambda_: float = 1.0, max_iter: int = 10000, \
             regularization: str = 'l2', optimization: str = None, \
             early_stopping: bool = False, decay: bool = False, \
-            decay_rate: float = 1, decay_interval: int = None) -> None:
+            decay_rate: float = 0.1, decay_interval: int or None = 1000) -> None:
         assert isinstance(nb_features, int)
         assert isinstance(alpha, float)
         assert isinstance(beta_1, float) and (beta_1 > 0 and beta_1 <= 1)
@@ -29,7 +27,8 @@ class LogisticRegression():
         assert isinstance(decay, bool)
         assert isinstance(decay_rate, float) and decay_rate >= 0 \
             and decay_rate <= 1
-        assert isinstance(decay_interval, int) and decay_interval > 0
+        assert (isinstance(decay_interval, int) and decay_interval > 0) or \
+            isinstance(decay_interval, None)
         assert regularization in self.supported_regularization
         assert optimization in self.supported_optimization
         assert initialization in self.supported_initialization
@@ -121,7 +120,7 @@ class LogisticRegression():
         mini_batches = []
         p = np.random.permutation(len(x))
         shuffled_x, shuffled_y = x[p], y[p]
-        for i in range((shuffled_x.shape[x] // batch_size) + 1):
+        for i in range((shuffled_x.shape[0] // batch_size)):
             if x.shape[0] % batch_size == 0 :
                 x_batch = shuffled_x[(i * batch_size) : ((i + 1) * batch_size)]
                 y_batch = shuffled_y[(i * batch_size) : ((i + 1) * batch_size)]
@@ -184,8 +183,9 @@ class LogisticRegression():
         return False
 
     def perform_learning_rate_decay(self, nb_epoch: int):
+        ''' Perform learning rate (alpha decay) each decay interval '''
         self.alpha = self.original_alpha \
-            / (1 + self.decay_rate * np.floor(nb_epoch, self.decay_interval))
+            / (1 + self.decay_rate * np.floor(nb_epoch / self.decay_interval))
 
     def gradient_descent(self, x: np.ndarray, y: np.ndarray, \
             x_val: np.ndarray or None = None, y_val: np.ndarray or None = None, \
@@ -226,7 +226,6 @@ class LogisticRegression():
         if batch_size == None or batch_size <= 0 : # if batch_size None or
             # non valid, batch gradient descent is performed
             batch_size = x.shape[1]
-
         # Iterate over epochs
         for i in range(0, self.max_iter):
             # Mini_batches are created
@@ -237,7 +236,6 @@ class LogisticRegression():
             # Case if early stopping by low difference in theta
             if early_stop is True:
                 break
-
             # Early-stopping option is performed according to MSE
             if y_val is not None and x_val is not None and i % 100 == 0:
                 mse.append(self.mean_squared_error(y_val, self.predict(x_val)))
@@ -245,11 +243,9 @@ class LogisticRegression():
                     self.theta = previous_theta
                     break
                 previous_theta = self.theta
-
+            # Learning rate (alpha) decay if option activated
             if self.decay:
                 self.perform_learning_rate_decay(i)
-
-
         # Return MSE if stored
         if y_val is not None and x_val is not None:
             return mse
