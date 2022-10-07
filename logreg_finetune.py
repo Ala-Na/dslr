@@ -27,9 +27,8 @@ def getRandomHyperparameters():
 
 def saveHyperparametersAndResult(df, j, alpha, beta_1, batch_size, lambda_, optimization,
 	early_stopping, decay, result):
-	df.append({'nb': j, 'result': [result], 'alpha': [alpha], 'beta_1': [beta_1], \
-		'batch_size': [batch_size], 'lambda': [lambda_], 'early_stopping': [early_stopping], \
-		'optimization': [optimization], 'decay': [decay]})
+	df.loc[len(df)] = [result, alpha, beta_1, batch_size, lambda_, early_stopping, \
+		optimization, decay]
 
 if __name__ == '__main__':
 
@@ -61,7 +60,8 @@ if __name__ == '__main__':
 	if os.path.isfile(file):
 		df = pd.read_csv(file)
 	else:
-		df = pd.DataFrame()
+		df = pd.DataFrame(columns=['result', 'alpha', 'beta_1', \
+		'batch_size', 'lambda', 'early_stopping', 'optimization', 'decay'])
 
 	# Logistic regression
 	x_train, fqrt, tqrt = scale(x_train, option='robust')
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 		i = 0
 		print("----")
 		print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-		while i < 10:
+		while i < 3:
 			results.append(sklearn.metrics.accuracy_score(y_test, y_hat))
 			if i != 0:
 				print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
