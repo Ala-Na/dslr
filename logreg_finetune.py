@@ -25,7 +25,7 @@ def getRandomHyperparameters():
 	decay = random.random() > 0.5
 	return alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay
 
-def saveHyperparametersAndResult(df, j, alpha, beta_1, batch_size, lambda_, optimization,
+def saveHyperparametersAndResult(df, alpha, beta_1, batch_size, lambda_, optimization,
 	early_stopping, decay, result):
 	df.loc[len(df)] = [result, alpha, beta_1, batch_size, lambda_, early_stopping, \
 		optimization, decay]
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
 	# To open dataframe
 	if os.path.isfile(file):
-		df = pd.read_csv(file)
+		df = pd.read_csv(file, index_col=0)
 	else:
 		df = pd.DataFrame(columns=['result', 'alpha', 'beta_1', \
 		'batch_size', 'lambda', 'early_stopping', 'optimization', 'decay'])
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 		i = 0
 		print("----")
 		print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-		while i < 3:
+		while i < 10:
 			results.append(sklearn.metrics.accuracy_score(y_test, y_hat))
 			if i != 0:
 				print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
@@ -90,6 +90,41 @@ if __name__ == '__main__':
 			y_hat = algo.predict(x_test)
 			i += 1
 		result = sum(results) / i
-		saveHyperparametersAndResult(df, j, alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay, result)
+		saveHyperparametersAndResult(df, alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay, result)
 
-	df.to_csv(file, mode='a', header=not os.path.exists(file))
+	df.to_csv(file)
+
+	max_accuracy = df['result'].max()
+	print('\nMax accuracy :', max_accuracy)
+
+	best_hyperparameters = df.loc[df['result'] == max_accuracy]
+	print('Corresponding hyperparameters:\n', best_hyperparameters)
+
+	min_accuracy = df['result'].min()
+	print('\nMin accuracy :', max_accuracy)
+
+	worst_hyperparameters = df.loc[df['result'] == min_accuracy]
+	print('Corresponding hyperparameters:\n', worst_hyperparameters)
+
+	alphas = best_hyperparameters['alpha'].values
+	selected_alpha = np.median(alphas)
+	print('\nALPHA', selected_alpha)
+
+	beta_1s = best_hyperparameters['beta_1'].values
+	selected_beta_1 = np.median(beta_1s)
+	print('\nBETA 1', selected_beta_1)
+
+	selected_batch_size = (best_hyperparameters['batch_size'].mode())[0]
+	print('\nBATCH SIZE', selected_batch_size)
+
+	selected_lambda_ = (best_hyperparameters['lambda'].mode())[0]
+	print('\nLAMBDA', selected_lambda_)
+
+	selected_early_stopping = (best_hyperparameters['early_stopping'].mode())[0]
+	print('\nEARLY STOPPING', selected_early_stopping)
+
+	selected_optimization = (best_hyperparameters['optimization'].mode())[0]
+	print('\nOPTIMIZATION', selected_optimization)
+
+	selected_decay = (best_hyperparameters['decay'].mode())[0]
+	print('\nDECAY', selected_decay)
