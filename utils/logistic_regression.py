@@ -16,7 +16,8 @@ class LogisticRegression():
             alpha: float = 0.001, beta_1: float = 0.9, beta_2: float = 0.99, \
             epsilon: float = 1e-8, lambda_: float = 1.0, max_iter: int = 1000, \
             regularization: str = 'l2', optimization: str = None, \
-            early_stopping: bool = False) -> None:
+            early_stopping: bool = False, decay: bool = False, \
+            decay_rate: float = 1, decay_interval: int = None) -> None:
         assert isinstance(nb_features, int)
         assert isinstance(alpha, float)
         assert isinstance(beta_1, float) and (beta_1 > 0 and beta_1 <= 1)
@@ -25,11 +26,16 @@ class LogisticRegression():
         assert isinstance(lambda_, float)
         assert isinstance(max_iter, int)
         assert isinstance(early_stopping, bool)
+        assert isinstance(decay, bool)
+        assert isinstance(decay_rate, float) and decay_rate >= 0 \
+            and decay_rate <= 1
+        assert isinstance(decay_interval, int) and decay_interval > 0
         assert regularization in self.supported_regularization
         assert optimization in self.supported_optimization
         assert initialization in self.supported_initialization
         self.theta = self.parameters_initialization(nb_features, initialization)
         self.alpha = alpha
+        self.original_alpha = alpha
         self.beta_1 = beta_1
         self.beta_2 = beta_2
         self.max_iter= max_iter
@@ -39,6 +45,10 @@ class LogisticRegression():
         if self.lambda_ < 0:
             raise ValueError("Lambda must be positive")
         self.early_stopping = early_stopping
+        self.decay = decay
+        self.decay_rate = decay_rate
+        self.decay_interval = decay_interval if decay_interval != None \
+            else max_iter
         self.initialize_step_size()
         self.initialize_velocity()
 
@@ -56,15 +66,11 @@ class LogisticRegression():
         bias = np.zeros((1, 1))
         return np.concatenate([weights, bias])
 
-    def predict(self, x: np.ndarray) -> np.ndarray:
-        ''' Predict an output according to x and theta parameters'''
-        if not isinstance(x, np.ndarray) \
-                or not np.issubdtype(x.dtype, np.number) or x.ndim != 2 \
-                or x.shape[0] == 0 or x.shape[1] != self.theta.shape[0] - 1:
-            return None
-        X = np.insert(x, 0, 1.0, axis=1)
-        return 1 / (1 + np.exp(-X @ self.theta))
-
+    def l2(self) -> np.ndarray:
+        ''' Perform L2 regularization '''
+        theta_cp = self.theta.copy()
+        theta_cp[0][0] = 0
+        return np.sum(theta_cp ** 2)
 
     def cost(self, y: np.ndarray, y_hat: np.ndarray) \
             -> np.ndarray or None:
@@ -136,23 +142,18 @@ class LogisticRegression():
     def update_without_optimization(self, gradients: np.ndarray) -> np.ndarray:
         ''' Perform simple gradient descent update of parameters (theta) '''
         return self.alpha * gradients
-        self.theta = self.theta - diff
-        return diff
 
     def update_with_momentum(self, gradients: np.ndarray) -> np.ndarray:
         ''' Perform parameters (theta) update with momentum '''
         self.velocity = self.beta_1 * self.velocity \
             + (1 - self.beta_1) * gradients
-        diff = self.alpha * self.velocity
-        self.theta = self.theta - diff
-        return diff
+        return self.alpha * self.velocity
 
     def update_with_rmsprop(self, gradients: np.ndarray)-> np.ndarray:
         ''' Perform parameters (theta) update with RMSprop'''
         self.step_size = self.beta_2 * self.step_size \
             + (1 - self.beta_2) * gradients
-        diff =
-        self.theta = self.theta - diff
+        return self.alpha * gradients / (np.sqrt(gradients) + self.epsilon)
 
     def update_with_adam(self, gradients: np.ndarray, time: int) -> None:
         ''' Perform parameters (theta) update with Adam '''
@@ -162,10 +163,10 @@ class LogisticRegression():
         self.step_size = self.beta_2 * self.step_size \
             + (1 - self.beta_2) * gradients
         corrected_step_size = self.step_size / (1 - self.beta_2**time)
-        self.theta = self.theta - self.alpha \
+        return self.alpha \
             * (corrected_velocity/(np.sqrt(corrected_step_size) + self.epsilon))
 
-    def perform_update(self, x: np.ndarray, y: np.ndarray, time: int) -> None:
+    def perform_update(self, x: np.ndarray, y: np.ndarray, time: int) -> bool:
         ''' Call corresponding update function.
         Perform early stopping if option is activated. '''
         gradients = self.cost_derivative(x, y)
@@ -174,7 +175,7 @@ class LogisticRegression():
         elif self.regularization == 'rmsprop':
             diff = self.update_with_rmsprop(gradients)
         elif self.regularization == 'adam':
-            diff = self.update_with_adam(gradients)
+            diff = self.update_with_adam(gradients, time)
         else:
             diff = self.update_without_optimization(gradients)
         self.theta = self.theta - diff
@@ -182,17 +183,20 @@ class LogisticRegression():
             return True
         return False
 
+    def perform_learning_rate_decay(self, nb_epoch: int):
+        self.alpha = self.original_alpha \
+            / (1 + self.decay_rate * np.floor(nb_epoch, self.decay_interval))
+
     def gradient_descent(self, x: np.ndarray, y: np.ndarray, \
             x_val: np.ndarray or None = None, y_val: np.ndarray or None = None, \
             batch_size: int or None = None) -> Tuple[list, list] or None:
-        """
+        '''
         Batch_size = 1 to run stochastic gradient descent
         x_val and y_val : Validation set to stop training if stable, if not
         present, training will stop once a threshold of 1e-6 is reached between
         two thetas iteration. MSE on validation set is only checked each 100
         epochs to avoid slowing down the training.
-        """
-        t = 0 # initialize for adam
+        '''
         # Check of x and y training data received
         if not isinstance(x, np.ndarray) \
                 or not np.issubdtype(x.dtype, np.number) \
@@ -216,38 +220,44 @@ class LogisticRegression():
             return None
         if y_val is not None and x_val is not None:
             mse = []
+            previous_theta = None
+
+        t = 0 # initialize for adam
+        if batch_size == None or batch_size <= 0 : # if batch_size None or
+            # non valid, batch gradient descent is performed
+            batch_size = x.shape[1]
 
         # Iterate over epochs
         for i in range(0, self.max_iter):
-            # Case for mini-batch
-            if batch_size != None and batch_size > 0:
-                mini_batches = self.create_mini_batches(x, y, batch_size)
-                for x_batch, y_batch in mini_batches:
-                    t += 1
-                    early_stop = self.perform_update(x_batch, y_batch, t)
-            # Case without mini-batch
-            else:
+            # Mini_batches are created
+            mini_batches = self.create_mini_batches(x, y, batch_size)
+            for x_batch, y_batch in mini_batches:
                 t += 1
-                early_stop = self.perform_update(x, y, t)
-            # Case if early-stopping
+                early_stop = self.perform_update(x_batch, y_batch, t)
+            # Case if early stopping by low difference in theta
             if early_stop is True:
                 break
-            # MSE calculation if needed
+
+            # Early-stopping option is performed according to MSE
             if y_val is not None and x_val is not None and i % 100 == 0:
-                mse.append(self.mean_squared_error(y_val, \
-                self.predict(x_val)))
+                mse.append(self.mean_squared_error(y_val, self.predict(x_val)))
                 if len(mse) >= 2 and mse[-2] - mse[-1] < 1e-6:
+                    self.theta = previous_theta
                     break
+                previous_theta = self.theta
+
+            if self.decay:
+                self.perform_learning_rate_decay(i)
+
+
+        # Return MSE if stored
         if y_val is not None and x_val is not None:
             return mse
 
-    def l2(self) -> np.ndarray:
-        theta_cp = self.theta.copy()
-        theta_cp[0][0] = 0
-        return np.sum(theta_cp ** 2)
-
-
     def mean_squared_error(self, y: np.ndarray, y_hat: np.ndarray) -> float:
+        '''
+        Calculate mean squared error between an expected and predicted output
+        '''
         if not isinstance(y, np.ndarray) \
                 or not np.issubdtype(y.dtype, np.number) \
                 or y.ndim != 2 or y.shape[1] != 1 or y.shape[0] == 0:
@@ -260,7 +270,17 @@ class LogisticRegression():
         mse = ((y_hat - y) ** 2).mean(axis=None)
         return float(mse)
 
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        ''' Predict an output according to x and theta parameters'''
+        if not isinstance(x, np.ndarray) \
+                or not np.issubdtype(x.dtype, np.number) or x.ndim != 2 \
+                or x.shape[0] == 0 or x.shape[1] != self.theta.shape[0] - 1:
+            return None
+        X = np.insert(x, 0, 1.0, axis=1)
+        return 1 / (1 + np.exp(-X @ self.theta))
+
     def save_values_npz(self, filepath='theta.npz') -> None:
+        ''' Save theta into an npz file'''
         if (os.path.isfile(filepath)):
                 os.remove(filepath)
         try:
@@ -269,6 +289,7 @@ class LogisticRegression():
             print("\033[91mOops, can't save values in {} file.\033[0m".format(filepath))
 
     def get_values_npz(self, filepath='theta.npz') -> None:
+        ''' Retrieve theta from an npz file '''
         try:
             values = np.load(filepath)
             assert np.issubdtype(values['theta'].dtype, np.number) and values['theta'].shape == self.theta.shape
@@ -276,6 +297,7 @@ class LogisticRegression():
         except:
             print("\033[91mOops, can't get values from {} file.\033[0m".format(filepath))
 
-    def set_values(self, theta) -> None:
+    def set_values(self, theta: np.ndarray) -> None:
+        ''' Set theta according to values if shapes are compatibles '''
         assert np.issubdtype(theta.dtype, np.number) and theta.shape == self.theta.shape
         self.theta = theta
