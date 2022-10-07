@@ -10,7 +10,7 @@ from utils.array_manip import *
 from utils.one_vs_all import *
 import random
 
-max_iter=1000
+MAX_ITER = 1000
 
 def getRandomHyperparameters():
 	alpha = random.uniform(0.0001, 0.1)
@@ -70,20 +70,17 @@ if __name__ == '__main__':
 
 	for j in range(100):
 		alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay = getRandomHyperparameters()
-		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=max_iter, \
+		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=MAX_ITER, \
 		initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
 		early_stopping=early_stopping, beta_1=beta_1)
 		algo.perform(x_train, y_train, x_test, y_test, batch_size)
 		results = []
 		y_hat = algo.predict(x_test)
 		i = 0
-		print("----")
-		print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
 		while i < 10:
 			results.append(sklearn.metrics.accuracy_score(y_test, y_hat))
 			if i != 0:
-				print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-				algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=max_iter, \
+				algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=MAX_ITER, \
 					initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
 					early_stopping=early_stopping, beta_1=beta_1)
 			algo.perform(x_train, y_train, x_test, y_test, batch_size)

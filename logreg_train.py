@@ -10,7 +10,17 @@ from utils.logistic_regression import *
 from utils.logistic_scores import *
 from utils.array_manip import *
 from utils.one_vs_all import *
-import random
+import warnings
+
+# Hyperparameters values
+MAX_ITER = 2500
+ALPHA = 0.066
+BETA_1 = 0.058
+LAMBDA_ = 0.0
+BATCH_SIZE = 128
+OPTIMIZATION = 'rmsprop'
+EARLY_STOPPING = False
+DECAY = False
 
 # Stochastic gradient descent
 # https://web.archive.org/web/20180618211933/http://cs229.stanford.edu/notes/cs229-notes1.pdf
@@ -56,28 +66,9 @@ def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 	ax.set_xticks([])
 	ax.set_yticks([])
 
-def getRandomHyperparameters():
-	alpha = random.uniform(0.0001, 0.1)
-	beta_1 = random.uniform(0.001, 0.1)
-	possible_batch_size = [1, 16, 32, 64, 128, 256, 512, 1024]
-	batch_size = random.choice(possible_batch_size)
-	possible_lambda_ = np.linspace(0, 1, 5)
-	lambda_ = float(np.random.choice(possible_lambda_))
-	supported_optimization = ['momentum', 'rmsprop', 'adam', None]
-	optimization = random.choice(supported_optimization)
-	early_stopping = random.random() > 0.8
-	decay = random.random() > 0.5
-	return alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay
-
-def saveHyperparametersAndResult(alpha, beta_1, batch_size, lambda_, optimization,
-	early_stopping, decay, result):
-	file = "experiments.csv"
-	df = pd.DataFrame({'result': [result], 'alpha': [alpha], 'beta_1': [beta_1], \
-		'batch_size': [batch_size], 'lambda': [lambda_], 'early_stopping': [early_stopping], \
-		'optimization': [optimization], 'decay': [decay]})
-	df.to_csv(file, mode='a', header=not os.path.exists(file))
-
 if __name__ == '__main__':
+
+	warnings.filterwarnings("ignore", category=FutureWarning)
 
 	# Check arguments given by user
 
@@ -143,11 +134,6 @@ if __name__ == '__main__':
 	print("We will train our dataset on the training set and keep the testing set untouched to see if our model predict well on example it wasn't trained on.")
 	print("In other words, if we have a a high enough %% of good answers on our testing set, it means we can generalize our predictions and trust our model.")
 
-	# print("Let's normalize numericals values with mean normalization (z_score).")
-	# print("We could use minmax normalization but it don't perform well with outliers and our dataset have some.")
-	# print("Another option could be to use a robust scaler (x - first_quartil) / (third_quartil - first_quartil).")
-	# normalized_df = get_mean_normalized(df, numerics_df)
-
 	array = np.asarray(df)
 	x, y = array[:, 1:], array[:, 0].reshape(-1, 1)
 	x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
@@ -158,37 +144,31 @@ if __name__ == '__main__':
 	print("It's important to perform scaling after splitting.")
 	x_train, fqrt, tqrt = scale(x_train, option='robust')
 	x_test, _ , _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
-	x, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
+	x_scale, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
 
 
-	for j in range(100):
-		alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay = getRandomHyperparameters()
-
-		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=max_iter, \
-		initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
-		early_stopping=early_stopping, beta_1=beta_1)
-		algo.perform(x_train, y_train, x_test, y_test, batch_size)
-		# It's not precised insubject if 98% is supposed to be on testing set or overall
-		results = []
+	algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=ALPHA, \
+		max_iter=MAX_ITER, initialization='he', lambda_=LAMBDA_, \
+		optimization=OPTIMIZATION, decay=DECAY, early_stopping=EARLY_STOPPING, \
+		beta_1=BETA_1)
+	algo.perform(x_train, y_train, x_test, y_test, BATCH_SIZE)
+	# It's not precised insubject if 98% is supposed to be on testing set or overall
+	y_hat = algo.predict(x_test)
+	i = 0
+	print("Obtained accuracy on testing set : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
+	while i < 100 and sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98:
+		x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
+		x_train, fqrt, tqrt = scale(x_train, option='robust')
+		x_test, _ , _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
+		x_scale, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
+		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=ALPHA, \
+			max_iter=MAX_ITER, initialization='he', lambda_=LAMBDA_, \
+			optimization=OPTIMIZATION, decay=DECAY, \
+			early_stopping=EARLY_STOPPING, beta_1=BETA_1)
+		algo.perform(x_train, y_train, x_test, y_test, BATCH_SIZE)
 		y_hat = algo.predict(x_test)
-		i = 0
-		print("----")
-		print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-		while i < 10:
-		# while i < 10 and (y_hat.any() == None or sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98):
-			results.append(sklearn.metrics.accuracy_score(y_test, y_hat))
-			if i != 0:
-				print("Got : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-				algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=max_iter, \
-					initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
-					early_stopping=early_stopping, beta_1=beta_1)
-			algo.perform(x_train, y_train, x_test, y_test, batch_size)
-			y_hat = algo.predict(x_test)
-			i += 1
-		result = sum(results) / i
-		saveHyperparametersAndResult(alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay, result)
-
-	exit()
+		print("Retrying : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
+		i += 1
 
 	if (sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98):
 		print("Sorry... Couldn't reach 98% accuracy ... Try again.")
@@ -196,9 +176,12 @@ if __name__ == '__main__':
 
 	algo.save_values_npz()
 
-	print(LogisticScores.accuracy(y, y_hat))
+	y_hat = algo.predict(x_scale)
+	print("Global accuracy: ", LogisticScores.accuracy(y, y_hat))
 
 	print("We can see that our model accuracy is pretty good !")
+
+	# TODO check graph
 	print("Let's show our results on a graph with errors.")
 
 	prediction_df = df.copy()

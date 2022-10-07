@@ -69,25 +69,19 @@ class OneVsAll():
 			thetas.append(self.submodels[idx].theta)
 		return thetas
 
-	def save_values_npz(self, filepath='thetas.npz', means=None, stds=None) -> None:
+	def save_values_npz(self, filepath='thetas.npz') -> None:
 		if (os.path.isfile(filepath)):
 			os.remove(filepath)
 		thetas = self.get_thetas()
 		try:
-			if means is not None and stds is not None:
-				for idx in range(0, self.max_y_val):
-					thetas[idx] = thetas[idx] * stds[idx] - means[idx]
 			np.savez(filepath, thetas=thetas)
 		except:
 			print("\033[91mOops, can't save values in {} file.\033[0m".format(filepath))
 
-	def get_values_npz(self, filepath='thetas.npz', means=None, stds=None) -> None:
+	def get_values_npz(self, filepath='thetas.npz') -> None:
 		try:
 			values = np.load(filepath)
 			thetas = values['thetas']
-			if means is not None and stds is not None:
-				for idx in range(0, self.max_y_val):
-					thetas[idx] = (thetas[idx] - means[idx]) / stds[idx]
 			for idx in range(0, self.max_y_val):
 				self.submodels[idx].set_values(thetas[idx])
 		except:
