@@ -2,38 +2,62 @@ import numpy as np
 from typing import Tuple
 import os
 
+from symbol import parameters
+
 class LogisticRegression():
-    """
-    Description:
-        My personnal logistic regression to classify things.
-    """
+    ''' A logistic regression model'''
 
-    supported_penalities = ['l2', None]
+    # Supported initialization, regularization and optimization algorithm
+    supported_initialization = ['random', 'zeros', 'he']
+    supported_regularization = ['l2', None]
+    supported_optimization = ['momentum', 'rmsprop', 'adam', None]
 
-    def __init__(self, theta: np.ndarray or list, alpha: float = 0.001, \
-            max_iter: int = 1000, penalty: str ='l2', lambda_: float = 1.0) \
-            -> None:
+    def __init__(self, nb_features: int, initialization: str = 'random', \
+            alpha: float = 0.001, beta_1: float = 0.9, beta_2: float = 0.99, \
+            epsilon: float = 1e-8, lambda_: float = 1.0, max_iter: int = 1000, \
+            regularization: str = 'l2', optimization: str = None, \
+            early_stopping: bool = False) -> None:
+        assert isinstance(nb_features, int)
         assert isinstance(alpha, float)
-        assert isinstance(max_iter, int)
-        if isinstance(theta, np.ndarray):
-            assert np.issubdtype(theta.dtype, np.number)
-            self.theta = theta
-        else:
-            try:
-                self.theta = np.asarray(theta).reshape((len(theta), 1))
-                assert np.issubdtype(self.theta.dtype, np.number)
-            except:
-                raise ValueError("Thetas not valid")
-        self.alpha = alpha
-        self.max_iter= max_iter
-        assert penalty in self.supported_penalities
+        assert isinstance(beta_1, float) and (beta_1 > 0 and beta_1 <= 1)
+        assert isinstance(beta_2, float) and (beta_2 > 0 and beta_2 <= 1)
+        assert isinstance(epsilon, float)
         assert isinstance(lambda_, float)
-        self.penalty = penalty
-        self.lambda_ = lambda_ if penalty != None else 0
+        assert isinstance(max_iter, int)
+        assert isinstance(early_stopping, bool)
+        assert regularization in self.supported_regularization
+        assert optimization in self.supported_optimization
+        assert initialization in self.supported_initialization
+        self.theta = self.parameters_initialization(nb_features, initialization)
+        self.alpha = alpha
+        self.beta_1 = beta_1
+        self.beta_2 = beta_2
+        self.max_iter= max_iter
+        self.regularization = regularization
+        self.optimization = optimization
+        self.lambda_ = lambda_ if regularization != None else 0
         if self.lambda_ < 0:
             raise ValueError("Lambda must be positive")
+        self.early_stopping = early_stopping
+        self.initialize_step_size()
+        self.initialize_velocity()
+
+    def parameters_initialization(self, shape: int, init: str) :
+        '''Initialize parameters (theta) of model'''
+        # random initialization with number between 0 and 1
+        if init == 'random':
+            weights = np.random.randn(shape, 1)
+        # init with zeros
+        elif init == 'zeros':
+            weights = np.zeros((shape, 1))
+        # init with He initialization, would make more sense in a NN as 1 would be shape of l - 1
+        elif init == 'he':
+            weights = np.random.randn(shape, 1) * np.sqrt(2 / 1) # would make more sense in a NN
+        bias = np.zeros((1, 1))
+        return np.concatenate([weights, bias])
 
     def predict(self, x: np.ndarray) -> np.ndarray:
+        ''' Predict an output according to x and theta parameters'''
         if not isinstance(x, np.ndarray) \
                 or not np.issubdtype(x.dtype, np.number) or x.ndim != 2 \
                 or x.shape[0] == 0 or x.shape[1] != self.theta.shape[0] - 1:
@@ -44,6 +68,7 @@ class LogisticRegression():
 
     def cost(self, y: np.ndarray, y_hat: np.ndarray) \
             -> np.ndarray or None:
+        ''' Calculus of loss (difference) on all predicted and expected outputs'''
         eps=1e-15
         if not isinstance(y, np.ndarray) \
                 or not np.issubdtype(y.dtype, np.number) \
@@ -63,6 +88,7 @@ class LogisticRegression():
 
     def cost_derivative(self, x: np.ndarray, y: np.ndarray) \
             -> np.ndarray or None:
+        ''' Derivative calculus of cost, necessary to perform gradient descent'''
         if not isinstance(x, np.ndarray) \
                 or not np.issubdtype(x.dtype, np.number) \
                 or x.ndim != 2 or x.size == 0 \
@@ -79,6 +105,82 @@ class LogisticRegression():
         theta_cp[0][0] = 0
         return (1 / m) * (X.T.dot(y_hat - y) + self.lambda_ * theta_cp)
 
+    def create_mini_batches(self, x: np.ndarray, y: np.ndarray, \
+            batch_size: int) -> list:
+        '''
+        Function to create mini batches of input and output for mini batches
+        gradient descent.
+        If batch_size == 1, it's stochastic gradient descent
+        '''
+        mini_batches = []
+        p = np.random.permutation(len(x))
+        shuffled_x, shuffled_y = x[p], y[p]
+        for i in range((shuffled_x.shape[x] // batch_size) + 1):
+            if x.shape[0] % batch_size == 0 :
+                x_batch = shuffled_x[(i * batch_size) : ((i + 1) * batch_size)]
+                y_batch = shuffled_y[(i * batch_size) : ((i + 1) * batch_size)]
+            else :
+                x_batch = shuffled_x[(i * batch_size):]
+                y_batch = shuffled_y[(i * batch_size):]
+            mini_batches.append((x_batch, y_batch))
+        return mini_batches
+
+    def initialize_velocity(self) -> None:
+        ''' Initialize velocity for performing momentum or adam optimization'''
+        self.velocity = np.zeros(self.theta.shape)
+
+    def initialize_step_size(self) -> None:
+        ''' Initialize velocity for performing RMSprop or adam optimization'''
+        self.step_size = np.zeros(self.theta.shape)
+
+    def update_without_optimization(self, gradients: np.ndarray) -> np.ndarray:
+        ''' Perform simple gradient descent update of parameters (theta) '''
+        return self.alpha * gradients
+        self.theta = self.theta - diff
+        return diff
+
+    def update_with_momentum(self, gradients: np.ndarray) -> np.ndarray:
+        ''' Perform parameters (theta) update with momentum '''
+        self.velocity = self.beta_1 * self.velocity \
+            + (1 - self.beta_1) * gradients
+        diff = self.alpha * self.velocity
+        self.theta = self.theta - diff
+        return diff
+
+    def update_with_rmsprop(self, gradients: np.ndarray)-> np.ndarray:
+        ''' Perform parameters (theta) update with RMSprop'''
+        self.step_size = self.beta_2 * self.step_size \
+            + (1 - self.beta_2) * gradients
+        diff =
+        self.theta = self.theta - diff
+
+    def update_with_adam(self, gradients: np.ndarray, time: int) -> None:
+        ''' Perform parameters (theta) update with Adam '''
+        self.velocity = self.beta_1 * self.velocity \
+            + (1 - self.beta_1) * gradients
+        corrected_velocity = self.velocity / (1 -  self.beta_1**time)
+        self.step_size = self.beta_2 * self.step_size \
+            + (1 - self.beta_2) * gradients
+        corrected_step_size = self.step_size / (1 - self.beta_2**time)
+        self.theta = self.theta - self.alpha \
+            * (corrected_velocity/(np.sqrt(corrected_step_size) + self.epsilon))
+
+    def perform_update(self, x: np.ndarray, y: np.ndarray, time: int) -> None:
+        ''' Call corresponding update function.
+        Perform early stopping if option is activated. '''
+        gradients = self.cost_derivative(x, y)
+        if self.regularization == 'momentum':
+            diff = self.update_with_momentum(gradients)
+        elif self.regularization == 'rmsprop':
+            diff = self.update_with_rmsprop(gradients)
+        elif self.regularization == 'adam':
+            diff = self.update_with_adam(gradients)
+        else:
+            diff = self.update_without_optimization(gradients)
+        self.theta = self.theta - diff
+        if self.early_stopping and diff.all() < 1e-6:
+            return True
+        return False
 
     def gradient_descent(self, x: np.ndarray, y: np.ndarray, \
             x_val: np.ndarray or None = None, y_val: np.ndarray or None = None, \
@@ -90,6 +192,8 @@ class LogisticRegression():
         two thetas iteration. MSE on validation set is only checked each 100
         epochs to avoid slowing down the training.
         """
+        t = 0 # initialize for adam
+        # Check of x and y training data received
         if not isinstance(x, np.ndarray) \
                 or not np.issubdtype(x.dtype, np.number) \
                 or x.ndim != 2 or x.size == 0 \
@@ -99,6 +203,8 @@ class LogisticRegression():
                 or not np.issubdtype(y.dtype, np.number) \
                 or y.ndim != 2 or y.shape != (x.shape[0], 1):
             return None
+
+        # Check of x_val and y_val received if calculation of MSE
         if x_val is not None and (not isinstance(x_val, np.ndarray) \
                 or not np.issubdtype(x_val.dtype, np.number) \
                 or x_val.ndim != 2 or x_val.size == 0 \
@@ -110,18 +216,23 @@ class LogisticRegression():
             return None
         if y_val is not None and x_val is not None:
             mse = []
+
+        # Iterate over epochs
         for i in range(0, self.max_iter):
-            x_sample = x
-            y_sample = y
+            # Case for mini-batch
             if batch_size != None and batch_size > 0:
-                random_idx = np.random.randint(0, x.shape[0], batch_size)
-                x_sample = np.take(x, random_idx, axis=0).reshape(batch_size, -1)
-                y_sample = np.take(y, random_idx).reshape(batch_size, 1)
-            diff = self.alpha \
-                * self.cost_derivative(x_sample, y_sample)
-            self.theta = self.theta - diff
-            if diff.all() < 1e-6:
+                mini_batches = self.create_mini_batches(x, y, batch_size)
+                for x_batch, y_batch in mini_batches:
+                    t += 1
+                    early_stop = self.perform_update(x_batch, y_batch, t)
+            # Case without mini-batch
+            else:
+                t += 1
+                early_stop = self.perform_update(x, y, t)
+            # Case if early-stopping
+            if early_stop is True:
                 break
+            # MSE calculation if needed
             if y_val is not None and x_val is not None and i % 100 == 0:
                 mse.append(self.mean_squared_error(y_val, \
                 self.predict(x_val)))
