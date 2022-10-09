@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 from utils.dataframe_manip import *
 import warnings
+import argparse
+import os
+import sys
+import time
 
 # https://stats.stackexchange.com/questions/562203/normalizing-and-scaling-are-different
 # https://towardsdatascience.com/histograms-and-density-plots-in-python-f6bda88f5ac0
@@ -47,15 +51,46 @@ def drawStrongCorrelation(df: pd.DataFrame, features: list, \
 	ax.set_ylabel(features[1])
 	ax.legend()
 
+def scrollText(text, sec=0.02):
+	for char in text:
+		sys.stdout.write(char)
+		sys.stdout.flush()
+		time.sleep(sec)
+
+def explanation1():
+	scrollText("\033[03m<< Now, I'll try to find correlated or similars features between houses. >>\033[0m you declare.\n\n")
+	scrollText("\n\033[03m<< I guess it's still to make us win time later ? >>\033[0m suppose McGonagall.\n\n")
+	scrollText("\n\033[03m<< Indeed. If a feature is correlated to another, it won't brings new informations. \nWe can keep only one of them. >>\033[0m you say to confirm her suspicion.\n\n")
+	scrollText("While she readjust her glasses on her nose, with a pleased smile, you explains to her \nthat you are going to use a scatter plot.\n")
+	scrollText("You detail to her that scatter plots are useful to display relationship of \nquantitative features.\n")
+	scrollText("It helps to point out overall pattern between two features. Each scatter plot can \nbe describe by the direction, form and strength/slope of the relation.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+def explanation2():
+	scrollText("You show a particular scatter plot to McGonagall.\n")
+	scrollText("\n\033[03m<< Look ! Defense Against the Dark Arts and Astronomy have a linear \ncorrelation !\n")
+	scrollText("It's a linear negative correlation with a strong slope. In others words : a \nstrong association.\n")
+	scrollText("It also means that the more you are good at Astronomy, the less you are good \nat Defense Against the Dark Arts. The contrary is also true. >>\033\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+def explanation3():
+	scrollText("\033[03m<< I guess some students prefers having their gaze to the stars, while \nothers prefers dueling. >>\033[0m mutters McGonagall.\n\n")
+	scrollText("To distract her, you explain to her that another advantage of scatter plots is \nthat it can help detects outliers in multivariate settings.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
 if __name__ == '__main__':
 	# Just to shut up a deprecation warning from numpy which appeared in the middle of my project
 	warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
-	print("Which subjects/features are similar or correlated ?")
+	parser = argparse.ArgumentParser("Hogwarts Students Histogram - Program description")
+	parser.add_argument("-expl", help="Display explanation", action="store_true")
+	args = parser.parse_args()
 
-	print("We can display relationship of quantitative features with a scatter plot.")
-	print("From such a graph, we can observe an overall pattern between those two features.")
-	print("Each scatter plot can be described by direction, form, and strengh/slope.")
+	if args.expl == True:
+		explanation1()
 
 	df = get_dataframe('./datasets/dataset_train.csv')
 	df = df.drop('Index', axis=1)
@@ -79,9 +114,8 @@ if __name__ == '__main__':
 		hspace=0.2, wspace=0.2)
 	plt.show()
 
-	print("Look ! Defense Against the Dark Arts and Astronomy have a linear correlation !")
-	print("It's a linear negative correlation with a strong slope (strong association)!")
-	print("It basically means that the more you are good at Astronomy, the less you are good at Defense Against the Dark Arts. The contrary is also true.")
+	if args.expl == True:
+		explanation2()
 
 	features=['Defense Against the Dark Arts', 'Astronomy']
 	fig, axs = plt.subplots(1, figsize=(30, 20))
@@ -89,8 +123,6 @@ if __name__ == '__main__':
 	drawStrongCorrelation(df, features, houses, colors, axs)
 	plt.show()
 
-	print("What does it mean for our Sorting Hat algorithm ?")
-	print("Those features are correlated with each other. It's not useful to train a model with both feature, we can choose only one of them.")
 
-	print("Another advantage of scatter plot is that it can help detect outliers values in multivariate settings.")
-	print("It'll look like points anormaly far from the others. Here, it seems okay, though we could see from previous boxplot that they were some outliers for 2 lessons.")
+	if args.expl == True:
+		explanation3()

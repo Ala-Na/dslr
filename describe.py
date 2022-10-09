@@ -1,7 +1,7 @@
 import pandas as pd
 import argparse
 import os
-from utils.dataframe_manip import get_dataFrame, get_numerics
+from utils.dataframe_manip import get_dataframe, get_numerics
 from utils.dataframe_statistics import DfStats
 
 if __name__ == '__main__':
@@ -14,7 +14,7 @@ if __name__ == '__main__':
 		parser.print_help()
 		exit(1)
 
-	datas_df = get_dataFrame(args.dataset)
+	datas_df = get_dataframe(args.dataset)
 	no_index = datas_df.drop('Index', axis=1)
 	numerics_df = get_numerics(no_index)
 	# For test set, column 'House' is empty and considered a numeric column as

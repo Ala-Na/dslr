@@ -1,16 +1,24 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from typing import Tuple
 from utils.dataframe_manip import *
 import warnings
-
+import sys
+import time
+import argparse
+import os
 
 # https://stats.stackexchange.com/questions/562203/normalizing-and-scaling-are-different
 # https://towardsdatascience.com/histograms-and-density-plots-in-python-f6bda88f5ac0
 
 # How to check for homogeneity ?
 # https://www.statisticshowto.com/homogeneity-homogeneous/
+
+def scrollText(text, sec=0.02):
+	for char in text:
+		sys.stdout.write(char)
+		sys.stdout.flush()
+		time.sleep(sec)
 
 def drawFeatureHistogram(df: pd.DataFrame, feature: str, houses: list, \
 		colors: list, ax: plt.axes, bins: int) -> None:
@@ -49,11 +57,46 @@ def drawBoxPlot(df: pd.DataFrame, feature: str, houses: list, \
 		patch.set_facecolor(color)
 	ax.set_title(feature)
 
+def explanation1():
+	scrollText("You install a chair for McGonagall next to you and invite her to sit.\n")
+	scrollText("She accepts your offer with a little smile and put her glasses on her nose.\nShe's looking at your screen with a puzzled face as you code.\n")
+	scrollText("\n\033[03m<< Ok, so here, I'm asking myself if there is any course where students' marks \nare homogeneously distributed. >>\033[0m you start.\n\n")
+	scrollText("\033[03m<< Why are you doing so ? Are those marks important to determine the house ? >>\033[0m \nshe asks in return.\n\n")
+	scrollText("\033[03m<< Quite the contrary. I want to discriminate students by their houses. \nSo, if a lesson, which is a feature, don't output differences between the \nfour houses, it's useless. \nI'll drop it and it'll make us win some time training our model. >>\033[0m\n\n")
+	scrollText("As you finish writing your program, you explain her that histograms, a kind \nof stastical representation, are useful to observe a feature distribution.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+def explanation2():
+	scrollText("\n\033[03m<< Ahah ! Seems like Arithmancy and Care of Magical Creatures are both \n homogeneously distributed ! Let's see it more clearly... >>\033[0m you say out loud.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+
+def explanation3():
+	scrollText("\n\033[03m<< Interesting >>\033[0m McGonagall whispers.\n")
+	scrollText("\n\033[03m<< I wonder if those professors have specials ways of teaching >>\033[0m she continues.\n\n")
+	scrollText("As she seems interested, you propose her to visualize the mean and standard deviation \nfor those subjects.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+
+def explanation4():
+	scrollText("You also decide to output a boxplot of it, as it's a representation useful to \nvisualize homogeneity.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+
 if __name__ == "__main__":
 	# Just to shut up a deprecation warning from numpy which appeared in the middle of my project
 	warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
-	print("Which lesson at Hogwarts has a homogeneous mark's distribution between all four houses ?\n")
+	parser = argparse.ArgumentParser("Hogwarts Students Histogram - Program description")
+	parser.add_argument("-expl", help="Display explanation", action="store_true")
+	args = parser.parse_args()
+
+	if args.expl == True:
+		explanation1()
 
 	df = get_dataframe('./datasets/dataset_train.csv')
 	df = df.drop('Index', axis=1)
@@ -73,7 +116,8 @@ if __name__ == "__main__":
 	fig.legend(handles, labels, loc='lower right')
 	plt.show()
 
-	print("Seems like Arithmancy and Care of Magical Creatures are good candidates.")
+	if args.expl == True:
+		explanation2()
 
 	features=['Arithmancy', 'Care of Magical Creatures']
 	fig, axs = plt.subplots(2, figsize=(30, 20))
@@ -86,9 +130,8 @@ if __name__ == "__main__":
 	fig.legend(handles, labels, loc='lower right')
 	plt.show()
 
-	print('More graphics to see ')
-
-	print("Let's visualize mean and standard deviation on those two 'most' homogeneous features.")
+	if args.expl == True:
+		explanation3()
 
 	normalized_df = get_mean_normalized(df, numerics_df)
 	features=['Arithmancy', 'Care of Magical Creatures']
@@ -102,7 +145,8 @@ if __name__ == "__main__":
 	fig.legend(handles, labels, loc='lower right')
 	plt.show()
 
-	print("For homogeneity, boxplots are a more adapted visualization tool.")
+	if args.expl == True:
+		explanation4()
 
 	features=['Arithmancy', 'Care of Magical Creatures']
 	fig, axs = plt.subplots(2, figsize=(30, 20))
@@ -114,7 +158,3 @@ if __name__ == "__main__":
 	handles, labels = axs[0].get_legend_handles_labels()
 	fig.legend(handles, labels, loc='lower right')
 	plt.show()
-
-	print("What could it mean for our Sorting Hate algorithm ?")
-	print("If we have an homogeneous distribution of a feature for the four groups, this feature may be not useful to discriminate between those groups.")
-	print("We will take off the two features which seems homogeneous: Arithmancy and Care of Magical Creatures for training our model.")
