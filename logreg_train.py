@@ -13,7 +13,7 @@ from utils.one_vs_all import *
 import warnings
 
 # Hyperparameters values
-MAX_ITER = 2500
+MAX_ITER = 3000
 ALPHA = 0.066
 BETA_1 = 0.058
 LAMBDA_ = 0.0
@@ -53,7 +53,7 @@ def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 		x_house_array_ori = house_df_ori[feat1].values
 		y_house_array_ori = house_df_ori[feat2].values
 		ax.scatter(x_house_array_ori, y_house_array_ori, color=color, \
-			alpha=1, label=house)
+			alpha=0.7, label=house)
 	for house, color in zip(houses, colors_predi):
 		house_df_predi = df_predi.loc[df_predi['Hogwarts House'] == house]
 		x_house_array_predi = house_df_predi[feat1].values
@@ -136,61 +136,50 @@ if __name__ == '__main__':
 
 	array = np.asarray(df)
 	x, y = array[:, 1:], array[:, 0].reshape(-1, 1)
-	x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
 
 	print("Let's normalize numericals values with robust scaler (x - first_quartil) / (third_quartil - first_quartil).")
 	print("We could use minmax normalization but it don't perform well with outliers and our dataset have some.")
 	print("We could also use z_score (mean normalisation) but it doesn't perform well if some data are not following a gaussian distribution.")
 	print("It's important to perform scaling after splitting.")
-	x_train, fqrt, tqrt = scale(x_train, option='robust')
-	x_test, _ , _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
-	x_scale, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
-
-
-	algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=ALPHA, \
-		max_iter=MAX_ITER, initialization='he', lambda_=LAMBDA_, \
-		optimization=OPTIMIZATION, decay=DECAY, early_stopping=EARLY_STOPPING, \
-		beta_1=BETA_1)
-	algo.perform(x_train, y_train, x_test, y_test, BATCH_SIZE)
-	# It's not precised insubject if 98% is supposed to be on testing set or overall
-	y_hat = algo.predict(x_test)
+	
+	obj_reached = False
 	i = 0
-	print("Obtained accuracy on testing set : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
-	while i < 100 and sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98:
+	while obj_reached == False and i <= 100:
 		x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
 		x_train, fqrt, tqrt = scale(x_train, option='robust')
 		x_test, _ , _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
 		x_scale, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
 		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=ALPHA, \
 			max_iter=MAX_ITER, initialization='he', lambda_=LAMBDA_, \
-			optimization=OPTIMIZATION, decay=DECAY, \
-			early_stopping=EARLY_STOPPING, beta_1=BETA_1)
+			optimization=OPTIMIZATION, decay=DECAY, early_stopping=EARLY_STOPPING, \
+			beta_1=BETA_1)
 		algo.perform(x_train, y_train, x_test, y_test, BATCH_SIZE)
 		y_hat = algo.predict(x_test)
-		print("Retrying : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
+		print("Obtained accuracy on testing set : {}".format(sklearn.metrics.accuracy_score(y_test, y_hat)))
+		if sklearn.metrics.accuracy_score(y_test, y_hat) >= 0.98:
+			obj_reached = True
 		i += 1
 
 	if (sklearn.metrics.accuracy_score(y_test, y_hat) < 0.98):
-		print("Sorry... Couldn't reach 98% accuracy ... Try again.")
+		print("Sorry... Couldn't reach 98% accuracy on testing set ... Try again after modifying hyperparameters.")
 		exit(1)
 
-	algo.save_values_npz()
+	algo.save_values_npz(scale=[fqrt, tqrt])
 
 	y_hat = algo.predict(x_scale)
 	print("Global accuracy: ", LogisticScores.accuracy(y, y_hat))
 
 	print("We can see that our model accuracy is pretty good !")
 
-	# TODO check graph
 	print("Let's show our results on a graph with errors.")
 
 	prediction_df = df.copy()
 	prediction_df['Hogwarts House'] = y_hat
 	prediction_df['Hogwarts House'].replace([0, 1, 2, 3], houses, inplace=True)
 	original_df = df.copy()
-	original_df['Hogwarts House'] = df['Hogwarts House']
+	original_df['Hogwarts House'].replace([0, 1, 2, 3], houses, inplace=True)
 	colors_ori = ['red', 'yellow', 'blue', 'green']
-	colors_predi = ['darkred', 'darkorange', 'navy', 'darkgreen']
+	colors_predi = ['red', 'yellow', 'blue', 'green']
 	diff = (prediction_df != original_df).any(1)
 	prediction_df = prediction_df[diff]
 	original_df = original_df[diff]

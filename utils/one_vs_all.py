@@ -69,12 +69,19 @@ class OneVsAll():
 			thetas.append(self.submodels[idx].theta)
 		return thetas
 
-	def save_values_npz(self, filepath='thetas.npz') -> None:
+	def save_values_npz(self, filepath='thetas.npz', scale=None) -> None:
 		if (os.path.isfile(filepath)):
 			os.remove(filepath)
 		thetas = self.get_thetas()
+		if scale is not None:
+			assert isinstance(scale, list) and len(scale) == 2 \
+				and scale[0].shape[0] == thetas[0].shape[0] - 1 \
+				and scale[1].shape[0] == thetas[0].shape[0] - 1
 		try:
-			np.savez(filepath, thetas=thetas)
+			if scale is not None:
+				np.savez(filepath, thetas=thetas, scale=scale)
+			else:
+				np.savez(filepath, thetas=thetas)
 		except:
 			print("\033[91mOops, can't save values in {} file.\033[0m".format(filepath))
 
@@ -84,6 +91,12 @@ class OneVsAll():
 			thetas = values['thetas']
 			for idx in range(0, self.max_y_val):
 				self.submodels[idx].set_values(thetas[idx])
+			if values['scale'] is not None:
+				scale = values['scale']
+				assert isinstance(scale, np.ndarray) and len(scale) == 2 \
+					and scale[0].shape[0] == thetas[0].shape[0] - 1 \
+					and scale[1].shape[0] == thetas[0].shape[0] - 1
+				return scale
 		except:
 			print("\033[91mOops, can't get values from {} file.\033[0m".format(filepath))
 
