@@ -119,7 +119,7 @@ At the end of the program, median or mode of hyperparameters values helpful to r
 - Lambda = Value for L2 regularization
 - Decay = Learning rate decay
 - Decay interval = Interval to perform learning rate decay
-- Epsilon
+- Epsilon = Small number to avoid computation problem in RMSprop / Adam
 - Batch size = Size of a batch  (1 = stochastic < mini-batch < max size = batch)
 
 
