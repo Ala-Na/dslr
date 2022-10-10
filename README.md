@@ -21,7 +21,14 @@ Statistical informations displayed: Count, mean, standard deviation, minimum, fi
 
 ### 📊 histogram.py
 ```python3 histogram.py```
-```python3 histogram.py vect```
+```python3 histogram.py -expl```
+
+<p align='center'>
+ <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900426-d29fa66b-db50-44ab-8f6b-80a02d745a35.png' alt='animated'>
+</p>
+<p align='center'>
+ <i align='center'>Project screen capture</i>
+</p>
 
 A program to perform training of univariate linear regression model.
 A step-by-step guide will explains why and how things are done for linear regression. Additionnal step, not done in this program, are also explained.
@@ -55,9 +62,7 @@ Why ? Because it's the main language used in data science and machine learning n
  <i align='center'>Project screen capture of interactive mode</i>
 </p>
 
-<p align='center'>
- <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900426-d29fa66b-db50-44ab-8f6b-80a02d745a35.png' alt='animated'>
-</p>
+
 
 <p align='center'>
  <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900432-d42f949e-4c10-4aec-882e-ffd65df64e54.png' alt='animated'>
