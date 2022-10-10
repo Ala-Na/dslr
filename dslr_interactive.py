@@ -70,7 +70,7 @@ if __name__=="__main__":
 	scrollText("You agree. You explain that for \"magic\" to work, you must retrieve \nstudent data. McGonagall then gives you a dusty grimoire. Fortunately \nfor you, a simple \"Digitalis!\" and the book changes into a flash \ndrive...\n")
 
 	time.sleep(2)
-	input("Press enter to continue ...\n")
+	input("\nPress enter to continue ...\n")
 	os.system("clear")
 
 	scrollText("\n\t\t\t\033[01mData Analysis\n\n\033[0m")
@@ -115,20 +115,28 @@ if __name__=="__main__":
 	os.system('clear')
 
 	if expl == "yes":
-		scrollText("You write the file \033[03mhistogram.py\033[0m. It takes no argument.\n\n")
+		scrollText("You write the file \033[01mhistogram.py\033[0m. It takes no argument.\n\n")
+		input("Press enter to continue ...\n")
+		os.system("clear")
 		os.system("python3 histogram.py -expl")
-		scrollText("You write the file \033[03mscatter_plot.py\033[0m. It takes no argument.\n\n")
+		scrollText("You write the file \033[01mscatter_plot.py\033[0m. It takes no argument.\n\n")
+		input("Press enter to continue ...\n")
+		os.system("clear")
 		os.system("python3 scatter_plot.py -expl")
-		scrollText("You write the file \033[03mpair_plot.py\033[0m. It takes no argument.\n\n")
+		scrollText("You write the file \033[01mpair_plot.py\033[0m. It takes no argument.\n\n")
 		os.system("python3 pair_plot.py -expl")
 	else:
 		scrollText("You choose to ignore McGonagall, thinking it'll be faster this way.\nYou're also a little dry to never have gotten a letter for Hogwarts.\nShe leaves after some time.\n\n")
-		scrollText("You write the file \033[03mhistogram.py\033[0m. It takes no argument.\n\n")
+		scrollText("You write the file \033[01mhistogram.py\033[0m. It takes no argument.\n\n")
+		input("Press enter to continue ...\n")
+		os.system("clear")
 		os.system("python3 histogram.py")
-		scrollText("You write the file \033[03mscatter_plot.py\033[0m. It takes no argument.\n\n")
+		scrollText("You write the file \033[01mscatter_plot.py\033[0m. It takes no argument.\n\n")
+		input("Press enter to continue ...\n")
+		os.system("clear")
 		os.system("python3 scatter_plot.py")
-		scrollText("You write the file \033[03mpair_plot.py\033[0m. It takes no argument.\n\n")
-		os.system("python3 pair_plot.py -expl")
+		scrollText("You write the file \033[01mpair_plot.py\033[0m. It takes no argument.\n\n")
+		os.system("python3 pair_plot.py")
 
 	input("Press enter to continue ...\n")
 	os.system('clear')
@@ -139,13 +147,13 @@ if __name__=="__main__":
 	scrollText("Here, you will use a One-vs-All logistic regression model.\n")
 
 	if expl == 'yes':
-		scrollText("Someone barge into the headmistress study: \nA student accidently transformed another kid into porridge.\n")
+		scrollText("\nSomeone barge into the headmistress study: \nA student accidently transformed another kid into porridge.\n")
 		scrollText("She needs to take care of it, and leave quickly.\n")
 		scrollText("Do you wish to wait for her and continue the explanations ?\n")
 		scrollText("\033[03mEnter 'yes' and informations will be displayed.\n")
 		scrollText("Enter 'no' and only results will be showed.\033[0m\n\n")
 	else:
-		scrollText("McGonagall come back to her office. She asks you if everything is fine.\n")
+		scrollText("\nMcGonagall come back to her office. She asks you if everything is fine.\n")
 		scrollText("Do you wish to explains to her what you are doing ?\n")
 		scrollText("\033[03mEnter 'yes' and informations will be displayed.\n")
 		scrollText("Enter 'no' and only results will be showed.\033[0m\n\n")
@@ -167,7 +175,7 @@ if __name__=="__main__":
 	elif expl == 'no' and new_expl == 'no':
 		scrollText("Nah. Even though the headmistress been nothing but respectful to you, you \ndon't like how wizards call you 'muggle'.\n")
 
-	scrollText("You write the file \033[03mlogreg_train.py\033[0m. It takes the dataset to train on as argument.\n\n")
+	scrollText("You write the file \033[01mlogreg_train.py\033[0m. It takes the dataset to train on as argument.\n\n")
 	scrollText("\n\033[01mPlease enter the file path to the dataset you wish to train on:\033[0m\n")
 	scrollText("\033[03mAvailable: datasets/dataset_train.csv\n")
 	scrollText("To pass, enter 'pass'\033[0m\n\n")
@@ -181,17 +189,16 @@ if __name__=="__main__":
 			os.system("python3 logreg_train.py " + inp)
 		inp = input("\nPress enter to clear...")
 		os.system('clear')
-		print("You write the file \033[03mlogreg_train.py\033[0m. It takes the dataset to train on as argument.\n\n")
+		print("You write the file \033[01mlogreg_train.py\033[0m. It takes the dataset to train on as argument.\n\n")
 		print("Please enter the file path to the dataset you wish to train on:")
 		print("\033[03mAvailable: datasets/dataset_train.csv")
 		print("To pass, enter 'pass'\033[0m\n")
 		inp = input("--> ")
 
-	input("Press enter to continue ...\n")
 	os.system("clear")
 
 	scrollText("You saved the weights of your model in \033[03mthetas.npz\033[0m file.\n\n")
-	scrollText("You write the file \033[03mlogreg_predict.py\033[0m. \nIt takes the dataset to predict and the weights' file as arguments.\n\n")
+	scrollText("You write the file \033[01mlogreg_predict.py\033[0m. \nIt takes the dataset to predict and the weights' file as arguments.\n\n")
 	scrollText("\n\033[01mPlease enter the file path to the dataset you wish to perform prediction on:\033[0m\n")
 	scrollText("\033[03mAvailable: datasets/dataset_test.csv\n")
 	scrollText("To pass, enter 'pass'\033[0m\n\n")
@@ -209,14 +216,15 @@ if __name__=="__main__":
 				os.system("python3 logreg_predict.py " + dataset + " " + weights + " -expl")
 			else:
 				os.system("python3 logreg_predict.py " + dataset + " " + weights)
-			scrollText("You write the file \033[03mlogreg_predict.py\033[0m. \nIt takes the dataset to predict and the weights' file as arguments.\n\n")
+			input("\nPress enter to continue ...\n")
+			os.system("clear")
+			scrollText("\nYou write the file \033[01mlogreg_predict.py\033[0m. \nIt takes the dataset to predict and the weights' file as arguments.\n\n")
 			scrollText("\n\033[01mPlease enter the file path to the dataset you wish to perform prediction on:\033[0m\n")
 			scrollText("\033[03mAvailable: datasets/dataset_test.csv\n")
 			scrollText("To pass, enter 'pass'\033[0m\n\n")
 			dataset = input("--> ")
 
-	os.system("clear")
-	input("Press enter to continue ...\n")
+	input("\nPress enter to continue ...\n")
 	os.system("clear")
 
 	scrollText("Congratulations !\nYou finished building a working Sorting Hat algorithm.\n\n")
