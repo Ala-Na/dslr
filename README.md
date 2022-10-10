@@ -111,7 +111,7 @@ At the end of the program, median or mode of hyperparameters values helpful to r
 - L2 regularization
 - Early stopping
 
-## Available weights initialization
+## Available weights initializations
 - Zeros
 - Random small numbers (0-1)
 - He initialization
