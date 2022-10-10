@@ -8,14 +8,19 @@ A 42 school project, from the machine learning / artificial intelligence branch.
 ## Purpose
 >A quick project to carry out a One-vs-All logistic regression on a dataset containing Hogwarts students.
 >Data statistical analysis and visualization must be performed prior to model training.
->The goal is to create a Sorting Hat model using students marks and others characteristics.
+>The goal is to create a Sorting Hat model using students marks and others characteristics to assign them to one of the four houses.
 
 ## Programs
+
+### 🧙‍♀️ dslr_interative.py
+```python3 dslr_interactive.py```
+
+An interactive scenario involving the famous headmistress, McGonagall, and performing all programs presents in this file (except for ```logreg_finetune.py```) . The user can choose to explains what is going on to the headmistress, which will display partial explanations for each program.
 
 ### 🧮 describe.py
 ```python3 describe.py dataset_filepath```
 
-A simple program which take as argument the filepath to a dataset to analyze and output corresponding statistical informations.
+A program which take as argument the filepath to a dataset to analyze and output corresponding statistical informations.
 The goal is to reproduce the describe function of sklearn.
 Statistical informations displayed: Count, mean, standard deviation, minimum, first quartile, median, third quartile, maximum, mode, range, interquartile range and number of outliers.
 
@@ -23,16 +28,15 @@ Statistical informations displayed: Count, mean, standard deviation, minimum, fi
 ```python3 histogram.py```
 ```python3 histogram.py -expl```
 
+A program to display an histogram of marks distribution for each subject and each Hogwarts house.
+With ```-expl``` argument, explanations from the interactive scenario are displayed. 
+
 <p align='center'>
  <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900426-d29fa66b-db50-44ab-8f6b-80a02d745a35.png' alt='animated'>
 </p>
 <p align='center'>
  <i align='center'>Project screen capture</i>
 </p>
-
-A program to perform training of univariate linear regression model.
-A step-by-step guide will explains why and how things are done for linear regression. Additionnal step, not done in this program, are also explained.
-With ```vect``` argument, it will perform vectorized calculations. 
 
 ### :100: accuracy.py
 ```python3 accuracy.py```
