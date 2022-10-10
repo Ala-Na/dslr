@@ -47,10 +47,10 @@ With ```-expl``` argument, explanations from the interactive scenario are displa
  <i align='center'>Project screen capture</i>
 </p>
 
-### :100: scatter_plot.py
+### 📏 scatter_plot.py
 ```python3 scatter_plot.py```
 
-A program to display a scatter plots of marks distribution for each pair of subjects, and each Hogwarts house.
+A program to display a scatter plot of marks distribution for each pair of subjects, and each Hogwarts house.
 The goal was to find the two most similars subjects.
 With ```-expl``` argument, explanations from the interactive scenario are displayed. 
 
@@ -61,11 +61,11 @@ With ```-expl``` argument, explanations from the interactive scenario are displa
  <i align='center'>Project screen capture</i>
 </p>
 
-### :100: pair_plot.py
+### 📐 pair_plot.py
 ```python3 scatter_plot.py```
 
-A program to display a scatter plots of marks distribution for each pair of subjects, and each Hogwarts house.
-The goal was to find the two most similars subjects.
+A program to display a pair plot of marks distribution of all Hogwarts lessons subjects, for all Hogwarts house.
+The goal was to choose useful features to train our model on.
 With ```-expl``` argument, explanations from the interactive scenario are displayed. 
 
 <p align='center'>
@@ -74,6 +74,54 @@ With ```-expl``` argument, explanations from the interactive scenario are displa
 <p align='center'>
  <i align='center'>Project screen capture</i>
 </p>
+
+### 🏋 logreg_train.py
+```python3 logreg_train.py dataset_filepath```
+
+A program to train our One-vs-All model on a correct Hogwarts dataset (```dataset_train.csv```) taken as argument.
+The goal was to reach an accuracy of 98%.
+Obtained weights are saved into ```thetas.npz```.
+With ```-expl``` argument, explanations from the interactive scenario are displayed. 
+
+### 🔮 logreg_predict.py
+```python3 logreg_predict.py dataset_filepath```
+
+A program to attribute Hogwarts' students in one of the four houses.
+It takes a correct dataset as argument (```dataset_test.csv```), as well as a weights file (```thetas.npz```).
+Predictions are saved into ```houses.csv```.
+With ```-expl``` argument, explanations from the interactive scenario are displayed. 
+
+### 📈 logreg_finetune.py
+```python3 logreg_finetune.py```
+
+A bonus program, to help find good hyperparameters to use as default value inside ```logreg_train.py```.
+It trains the One-Vs-All model with randomly chosen hyperparameters and output the mean of ten differents training (with potential differents randomly initialized weights) with those hyperparameters.
+100 experiments are run on the same training and testing sets. Results and hyperparameters values of those experiments are registered in ```experiments.csv```.
+At the end of the program, median or mode of hyperparameters values helpful to reach best accuracy are displayed.
+
+## Logistic regression details
+### Available optimizations
+- RMSprop
+- Momentum
+- Adam
+- Learning rate decay
+- Mini-batch or stochastic gradient descent
+
+### Available regularizations
+- L2 regularization
+- Early stopping
+
+### Available hyperparameters
+- Max iter = Number of epochs
+- Alpha = Learning rate
+- Beta 1 = Value for momentum / Adam
+- Beta 2 = Value for RMSprop / Adam
+- Lambda = Value for L2 regularization
+- Decay = Learning rate decay
+- Decay interval = Interval to perform learning rate decay
+- Epsilon
+- Batch size = Size of a batch  (1 = stochastic < mini-batch < max size = batch)
+
 
 ## Language used
 Python :snake:
