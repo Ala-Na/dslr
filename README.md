@@ -15,7 +15,15 @@ A 42 school project, from the machine learning / artificial intelligence branch.
 ### 🧙‍♀️ dslr_interative.py
 ```python3 dslr_interactive.py```
 
-An interactive scenario involving the famous headmistress, McGonagall, and performing all programs presents in this file (except for ```logreg_finetune.py```) . The user can choose to explains what is going on to the headmistress, which will display partial explanations for each program.
+A terminal interactive scenario involving the famous headmistress, McGonagall, and performing all programs presents in this file (except for ```logreg_finetune.py```) . The user can choose to explains what is going on to the headmistress, which will display partial explanations for each program.
+
+<p align='center'>
+ <img width= '350' align='center' src='https://user-images.githubusercontent.com/67599180/194900103-66c28466-2930-44a4-94c8-d0f003784cdd.gif' alt='animated'>
+</p>
+
+<p align='center'>
+ <i align='center'>Project screen capture of interactive mode</i>
+</p>
 
 ### 🧮 describe.py
 ```python3 describe.py dataset_filepath```
@@ -29,6 +37,7 @@ Statistical informations displayed: Count, mean, standard deviation, minimum, fi
 ```python3 histogram.py -expl```
 
 A program to display an histogram of marks distribution for each subject and each Hogwarts house.
+The goal was to answer the question "Which subject at Hogwarts is homogeneously distributed between the four houses ?".
 With ```-expl``` argument, explanations from the interactive scenario are displayed. 
 
 <p align='center'>
@@ -38,12 +47,33 @@ With ```-expl``` argument, explanations from the interactive scenario are displa
  <i align='center'>Project screen capture</i>
 </p>
 
-### :100: accuracy.py
-```python3 accuracy.py```
+### :100: scatter_plot.py
+```python3 scatter_plot.py```
 
-A program which explains the differents accuracy measures available and perform it for our current data set.
+A program to display a scatter plots of marks distribution for each pair of subjects, and each Hogwarts house.
+The goal was to find the two most similars subjects.
+With ```-expl``` argument, explanations from the interactive scenario are displayed. 
 
+<p align='center'>
+ <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900432-d42f949e-4c10-4aec-882e-ffd65df64e54.png' alt='animated'>
+</p>
+<p align='center'>
+ <i align='center'>Project screen capture</i>
+</p>
 
+### :100: pair_plot.py
+```python3 scatter_plot.py```
+
+A program to display a scatter plots of marks distribution for each pair of subjects, and each Hogwarts house.
+The goal was to find the two most similars subjects.
+With ```-expl``` argument, explanations from the interactive scenario are displayed. 
+
+<p align='center'>
+ <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900436-d0afbc0f-bdd8-42e8-933c-7a5409bf481d.png' alt='animated'>
+</p>
+<p align='center'>
+ <i align='center'>Project screen capture</i>
+</p>
 
 ## Language used
 Python :snake:
@@ -63,20 +93,5 @@ Why ? Because it's the main language used in data science and machine learning n
 Note that seaborn could have been used for ```pair_plot.py``` but, as 42 restrict the quantity of memory per student, I choose to use solely matplotlib for visualization.
 
  
-<p align='center'>
- <img width= '350' align='center' src='https://user-images.githubusercontent.com/67599180/194900103-66c28466-2930-44a4-94c8-d0f003784cdd.gif' alt='animated'>
-</p>
-
-<p align='center'>
- <i align='center'>Project screen capture of interactive mode</i>
-</p>
 
 
-
-<p align='center'>
- <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900432-d42f949e-4c10-4aec-882e-ffd65df64e54.png' alt='animated'>
-</p>
-
-<p align='center'>
- <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900436-d0afbc0f-bdd8-42e8-933c-7a5409bf481d.png' alt='animated'>
-</p>
