@@ -53,9 +53,13 @@ Why ? Because it's the main language used in data science and machine learning n
 
 
 ## Libraries used
-- Numpy
-- Pandas
-- matplotlib
+- NumPy (version: 1.21.5)
+- pandas (version 1.5.0)
+- matplotlib (version 3.5.1)
+- sklearn (version 1.1.2)
+- playsound (version 1.3.0)
+- argparse (version 1.1)
+Note that seaborn could have been used for ```pair_plot.py``` but, as 42 restrict the quantity of memory per student, I choose to use solely matplotlib for visualization.
 
  
 <p align='center'>
