@@ -13,7 +13,7 @@ import os
 # https://medium.com/nerd-for-tech/data-engineering-a-feature-selection-example-with-the-iris-dataset-11f0554e4b00
 # https://www.kaggle.com/code/bbloggsbott/feature-selection-correlation-and-p-value/notebook
 
-def scrollText(text, sec=0.02):
+def scrollText(text, sec=0.04):
 	for char in text:
 		sys.stdout.write(char)
 		sys.stdout.flush()
@@ -49,7 +49,7 @@ def explanation1():
 	os.system("clear")
 
 def explanation2():
-	scrollText("As you precise to McGonagall that she can only look at one of the lower or upper triangle \nof the pair plot (because they're reflection of each other for differents \nx and y axis), she asks you :\n\n")
+	scrollText("As you precise to McGonagall that she can only look at one of the lower or upper triangle \nof the pair plot (because they're reflection of each other for different \nx and y axis), she asks you :\n\n")
 	scrollText("\033[03m<< What is the use of that pair plot exactly ? >>\033[0m\n\n")
 	scrollText("You answer that it's a pratical way to visualize what you saw before in one go.\n")
 	scrollText("It can help to gain some knowledge on our features, and to see if some are \nuseless and can be left out for training our model.\n")
@@ -63,6 +63,8 @@ def explanation2():
 	os.system("clear")
 
 def explanation3():
+	input("Press enter to continue ...\n")
+	os.system("clear")
 	scrollText("\033[03m<< A low score for a high pvalue is a sign that a feature can be dropped. >>\033[0m \nyou explain.\n\n")
 	scrollText("You summarize to her that you'll be dropping Arithmancy, Care of Magical Creatures, \nand either Defense Against the Dark Arts or Astronomy.\n")
 	scrollText("But you'll be using the rest !\n\n")
@@ -74,12 +76,10 @@ def explanation3():
 	os.system("clear")
 
 def explanation4():
-	scrollText("After displaying them, you say that the scatter plots are not very informatives.\n")
+	scrollText("After displaying them, you say that those late scatter plots are not very informatives.\n")
 	scrollText("No correlation can be found, for example.\n")
-	scrollText("But histogram show that there's an homogeneous distribution of our 4 classes on \nthose features, with small local differences.\n")
+	scrollText("But histograms show that there's an homogeneous distribution of our 4 classes on \nthose features, with small local differences.\n")
 	scrollText("It means they have little or none influence on the Hogwarts House attribution. \nYou declare you also can drop them for your model.\n\n")
-	input("Press enter to continue ...\n")
-	os.system("clear")
 
 if __name__ == '__main__':
 	# Just to shut up a deprecation warning from numpy which appeared in the middle of my project
@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
 	if args.expl == True:
 		explanation3()
-	
+
 	df['Best Hand'] = df['Best Hand'].map({'Right': 0, 'Left': 1})
 	df['Birthday'] = pd.to_datetime(df['Birthday'])
 	df['Birth Day'] = df['Birthday'].dt.day

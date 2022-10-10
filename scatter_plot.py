@@ -51,7 +51,7 @@ def drawStrongCorrelation(df: pd.DataFrame, features: list, \
 	ax.set_ylabel(features[1])
 	ax.legend()
 
-def scrollText(text, sec=0.02):
+def scrollText(text, sec=0.04):
 	for char in text:
 		sys.stdout.write(char)
 		sys.stdout.flush()

@@ -57,18 +57,19 @@ if __name__ == '__main__':
 
 	# To open dataframe
 	if os.path.isfile(file):
-		df = pd.read_csv(file, index_col=0)
-	else:
-		df = pd.DataFrame(columns=['result', 'alpha', 'beta_1', \
-		'batch_size', 'lambda', 'early_stopping', 'optimization', 'decay'])
+		os.remove('houses.csv')
+	df = pd.DataFrame(columns=['result', 'alpha', 'beta_1', \
+	'batch_size', 'lambda', 'early_stopping', 'optimization', 'decay'])
 
 	# Logistic regression
 
+	x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
+	x_train, fqrt, tqrt = scale(x_train, option='robust')
+	x_test, _, _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
+	x, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
+
 	for j in range(100):
-		x_train, x_test, y_train, y_test = data_spliter(x, y, 0.8)
-		x_train, fqrt, tqrt = scale(x_train, option='robust')
-		x_test, _, _ = scale(x_test, option='robust', lst1=fqrt, lst2=tqrt)
-		x, _, _ = scale(x, option='robust', lst1=fqrt, lst2=tqrt)
+		print("Experiment with random hyperparameters number {}".format(j + 1))
 		alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay = getRandomHyperparameters()
 		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=MAX_ITER, \
 		initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \

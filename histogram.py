@@ -14,7 +14,7 @@ import os
 # How to check for homogeneity ?
 # https://www.statisticshowto.com/homogeneity-homogeneous/
 
-def scrollText(text, sec=0.02):
+def scrollText(text, sec=0.04):
 	for char in text:
 		sys.stdout.write(char)
 		sys.stdout.flush()

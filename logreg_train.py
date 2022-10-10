@@ -5,12 +5,17 @@ import argparse
 import os
 import sklearn.metrics
 import matplotlib.pyplot as plt
+from histogram import explanation3
 from utils.dataframe_manip import *
 from utils.logistic_regression import *
 from utils.logistic_scores import *
 from utils.array_manip import *
 from utils.one_vs_all import *
 import warnings
+import sys
+import time
+import argparse
+import os
 
 # Hyperparameters values
 MAX_ITER = 3000
@@ -42,7 +47,11 @@ DECAY = False
 # Note about normalization : Minmax is often used to scale data, but it doesn't apply
 # well on outliers. Here, some data have outliers (though few), so let's use z_score/mean normalization instead.
 
-max_iter=1000
+def scrollText(text, sec=0.04):
+	for char in text:
+		sys.stdout.write(char)
+		sys.stdout.flush()
+		time.sleep(sec)
 
 def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 		feat1: str, feat2: str, houses: list, colors_ori: list, \
@@ -66,6 +75,76 @@ def drawScatterPlotCorrelation(df_ori: pd.DataFrame, df_predi: pd.DataFrame, \
 	ax.set_xticks([])
 	ax.set_yticks([])
 
+def explanation1():
+	os.system("clear")
+	scrollText("\033[03m<< Before training my model, I need to prepare my data.\nI'll drop the useless columns with little impact: \n'Arithmancy', 'Care of Magical Creatures' and finally 'Defense Against the Dark Arts'.\n")
+	scrollText("I'll also drop the non convertible datas columns like first and last name. >>\033[0m you say while coding.\n\nMcGonagall nods slightly as you talk.\n")
+	scrollText("\n\033[03m<< Let's also convert Hogwarts House into a number value. 0 for  Gryffindor, 1 for Hufflepuff, ...\n")
+	scrollText("We have NaN values in our dataset. As we now only have numerical values, we need to replace NaN with \neither mean or median if there's outliers.\n")
+	scrollText("Let's detect features with outliers thanks to mean normalization (also called z_score) > 3 \nor < -3. >>\033[0m you flood her with informations, but she seems to keep up.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+def explanation2():
+	input("\nPress enter to continue ...\n")
+	os.system("clear")
+	scrollText("\033[03m<< Okay ! Now we have a correct data set, and we have to perform logistic \nregression on it. >>\033[0m you say, merrily as you're finally reaching the core of your work.\n\nMcGonagall smile at your enthusiasm.\n\n")
+	scrollText("\033[03m<< It's basically a linear regression : We have a function under the format \n\"w1a1 + w2a2 + ... + b = y_hat\".\n")
+	scrollText("We want to find w and b values which make y_hat (the prediction) closest as possible \nof targets y (true value).\n")
+	scrollText("We already know y (here, Hogwarts Houses) and we can calculate global distance between \nprediction and targets/expected results.\n")
+	scrollText("For example, if we predict a student to be inside Slytherin but it's in truth a Ravenclaw, \nour distance will increase. \nIf it's actually a Slytherin, it won't increase.\n")
+	scrollText("But we do that on ALL examples of our data set.\n")
+	scrollText("Thanks to this distance calculus, we can use a technic called gradient descent.\n")
+	scrollText("Gradient descent able us to calculate in which way w and b values should progress to reduce \nthe global distance.\n")
+	scrollText("We repeat gradient descent in many steps, until we reach the minimum distance.\n")
+	scrollText("This technic able us to find the best w and b values, where w and b will stop changing or \nchange just a little between two iterations.\n")
+	scrollText("In logistic regression, we use the sigmoid function to keep our prediction y_hat between 0 and 1.\n")
+	scrollText("We could translate 0 as 'is not a Ravenclaw' and 1 as 'is a Ravenclaw' for each student.\n")
+	scrollText("But here we have 4 classes to discriminate. \nSo we use a One-vs-All algorithm : we will actually train four model, each giving a \nprobability of being in a specific house.\n")
+	scrollText("For each student, we will pick its house according to the strongest probability to belongs to one.\n")
+	scrollText("For example, if a student have a 0.2 probability to be in Gryffindor, 0.1 to be in Hufflepuff, \n0.9 to be in Ravenclaw and 0.7 to be in Slytherin, we will predict it to be in Ravenclaw. >>\033[0m\n\n")
+	scrollText("\033[03m<< You seems a bit Ravenclaw yourself. >>\033[0m states gently McGonagall.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+	scrollText("You answer with a grin before proceeding :\n\n")
+	scrollText("\033[03m<< First, let's split our data into a training and a testing set.\n")
+	scrollText("We will train our dataset on the training set and keep the testing set untouched to see if our model \npredict well on example it wasn't trained on.\n")
+	scrollText("In other words, if we have a a high enough % of good answers on our testing set, it means we can \ngeneralize our predictions and trust our model.\n")
+	scrollText("Another useful thing to do is to scale our data: By reducing the scale, it'll make calculation \nquicker and reduce the risk of calculation overflow.\n")
+	scrollText("So let's normalize numericals values with robust scaler : \n(x - first_quartil) / (third_quartil - first_quartil).\n")
+	scrollText("We could use minmax normalization but it don't perform well with outliers and our dataset have some.\n")
+	scrollText("We could also use z_score (mean normalisation) but it doesn't perform well if some data are not \nfollowing a gaussian distribution.\n")
+	scrollText("It's better to perform scaling AFTER splitting and use the same value than training set on testing \nset. >>\033[0m\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+	scrollText("\033[03m<< By the way, our model use hyperparameters: parameters to be set by us, which will make it \nperforms better or worse. >>\033[0m\n\n")
+	scrollText("\033[01mBonus : you wrote logreg_finetune.py to choose better possible hyperparameters.\n")
+	scrollText("It can take a while to compute, so we won't launch it here. Results are in experiments.csv.\033[0m\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+	scrollText("McGonagall is waiting for a 98% accuracy, but as she doesn't have any prior knowledge in data \nscience, she never said if it was globally, on training or testing set.\n")
+	scrollText("You decide to check your model accuracy on your testing set, but depending on the randomly selected \ntesting set, 98% of accuracy may never be reached.\n")
+	scrollText("So you'll train model on different training set until you reach the said accuracy on the \ncorresponding testing set.\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+	scrollText("\033[03m<< Let's start the magic ! >>\033[0m\n\n")
+	input("Press enter to continue ...\n")
+	os.system("clear")
+
+def explanation3():
+	input("\nPress enter to continue ...\n")
+	os.system("clear")
+	scrollText("\033[03m<< We can see that our model accuracy is pretty good ! >>\033[0m\n\n")
+	scrollText("\033[03m<< Indeed, congratulations. >>\033[0m answers the headmistress with a joyful tone.\n\n")
+	scrollText("You both check hands in front of this little success.\n")
+	scrollText("But there's still some errors. \nYou propose her to visualize the corresponding students on a graph of \nmisclassification.\n")
+	input("\nPress enter to continue ...\n")
+	os.system("clear")
+
 if __name__ == '__main__':
 
 	warnings.filterwarnings("ignore", category=FutureWarning)
@@ -74,6 +153,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser("Sorting Hat - Program description")
 	parser.add_argument("dataset", type=str, help="File path of training dataset to describe (with valid reading permission)")
+	parser.add_argument("-expl", help="Display explanation", action="store_true")
 	args = parser.parse_args()
 	filename = args.dataset.split("/")[-1]
 	if filename != 'dataset_train.csv':
@@ -85,22 +165,15 @@ if __name__ == '__main__':
 		exit(1)
 
 	# Data preparation
-
-	print("Let's drop the column we saw had little impact previously : 'Arithmancy', 'Care of Magical Creatures' and finally 'Defense Against the Dark Arts'.")
-	print("We'll also drop non convertible datas columns like first and last name.")
+	if args.expl == True:
+		explanation1()
 
 	df = get_dataframe(args.dataset)
 	to_drop = ['Index', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts', 'Birthday', 'Best Hand', 'First Name', 'Last Name']
 	df = df.drop(to_drop, axis=1)
 	numerics_df = get_numerics(df)
-
-
-	print("Let's also convert Hogwarts House into a number value. 0 =  Gryffindor, 1 = Hufflepuff, ...")
 	houses = get_houses_list(df)
 	df['Hogwarts House'].replace(houses, [0, 1, 2, 3], inplace=True)
-
-	print("We have NaN values in our dataset. As we now only have numerical values, we need to replace NaN with either mean or median if there's outliers.")
-	print("Let's detect features with outliers thanks to mean normalization (also called z_score) > 3 or < -3.")
 	for column in numerics_df.columns:
 		if df[column].isnull().values.any():
 			abs_z_score = df[column].abs()
@@ -113,35 +186,12 @@ if __name__ == '__main__':
 				df[column].fillna(value=df[column].mean(), inplace=True)
 
 	# Logistic regression
-
-	print("Okay ! Now we have a correct data set, and we have to perform logistic regression on it.")
-	print("It's basically a linear regression : We have a function under the format w1a1 + w2a2 + ... + b = y_hat.")
-	print("We want to find w and b values which make y_hat (prediction) closest as possible of targets y.")
-	print("We already know y (here, Hogwarts Houses) and we can calculate global distance between prediction and targets/expected results.")
-	print("For example, if we predict a student to be inside Slytherin but it's in truth a Ravenclaw, our distance will increase. If it's actually a Slytherin, it won't increase.")
-	print("But we do that on ALL examples of our data set.")
-	print("Thanks to this distance calculus, we can use a technic called gradient descent.")
-	print("Gradient descent able us to calculate in which way w and b values should progress to reduce the global distance.")
-	print("We repeat gradient descent in many steps, until we reach the minimum distance.")
-	print("This technic able us to find the best w and b values, where w and b will stop changing or change just a little between two iterations.")
-	print("In logistic regression, we use the sigmoid function to keep our prediction y_hat between 0 and 1.")
-	print("We could translate 0 in 'not a Slytherin' and 1 in 'is a Slytherin' for each student.")
-	print("But here we have 4 classes to discriminate. So we use a One-vs-All algorithm : we will actually train four model, each giving a probability of being in a specific house.")
-	print("For each student, we will pick its house according to the strongest probability to belongs to one.")
-	print("For example, if a student have a 0.2 probability to be in Gryffindor, 0.1 to be in Hufflepuff, 0.7 to be in Ravenclaw and 0.9 to be in Slytherin, we will predict it to be in Slytherin.")
-
-	print("But first, let's split our data into a training and a testing set.")
-	print("We will train our dataset on the training set and keep the testing set untouched to see if our model predict well on example it wasn't trained on.")
-	print("In other words, if we have a a high enough %% of good answers on our testing set, it means we can generalize our predictions and trust our model.")
+	if args.expl == True:
+		explanation2()
 
 	array = np.asarray(df)
 	x, y = array[:, 1:], array[:, 0].reshape(-1, 1)
 
-	print("Let's normalize numericals values with robust scaler (x - first_quartil) / (third_quartil - first_quartil).")
-	print("We could use minmax normalization but it don't perform well with outliers and our dataset have some.")
-	print("We could also use z_score (mean normalisation) but it doesn't perform well if some data are not following a gaussian distribution.")
-	print("It's important to perform scaling after splitting.")
-	
 	obj_reached = False
 	i = 0
 	while obj_reached == False and i <= 100:
@@ -165,13 +215,12 @@ if __name__ == '__main__':
 		exit(1)
 
 	algo.save_values_npz(scale=[fqrt, tqrt])
-
 	y_hat = algo.predict(x_scale)
 	print("Global accuracy: ", LogisticScores.accuracy(y, y_hat))
 
-	print("We can see that our model accuracy is pretty good !")
-
-	print("Let's show our results on a graph with errors.")
+	# Misclassified students representation
+	if args.expl == True:
+		explanation3()
 
 	prediction_df = df.copy()
 	prediction_df['Hogwarts House'] = y_hat
@@ -183,7 +232,6 @@ if __name__ == '__main__':
 	diff = (prediction_df != original_df).any(1)
 	prediction_df = prediction_df[diff]
 	original_df = original_df[diff]
-
 	df = df.drop('Hogwarts House', axis=1)
 
 	fig, axs = plt.subplots(7, 7, figsize=(30, 20))
