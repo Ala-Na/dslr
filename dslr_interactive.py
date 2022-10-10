@@ -217,6 +217,7 @@ if __name__=="__main__":
 				os.system("python3 logreg_predict.py " + dataset + " " + weights + " -expl")
 			else:
 				os.system("python3 logreg_predict.py " + dataset + " " + weights)
+				scrollText("If no error occured, file \033[01mhouse.csv\033[0m is now created.\n")
 			input("\nPress enter to continue ...\n")
 			os.system("clear")
 			scrollText("\nYou write the file \033[01mlogreg_predict.py\033[0m. \nIt takes the dataset to predict and the weights' file as arguments.\n\n")
@@ -225,10 +226,6 @@ if __name__=="__main__":
 			scrollText("To pass, enter 'pass'\033[0m\n\n")
 			dataset = input("--> ")
 
-	if new_expl == 'no':
-		scrollText("File \033[01mhouse.csv\033[0m is now created.\n")
-
-	input("\nPress enter to continue ...\n")
 	os.system("clear")
 
 	playsound('music.mp3', False)
