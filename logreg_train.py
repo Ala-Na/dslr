@@ -18,12 +18,12 @@ import argparse
 import os
 
 # Hyperparameters values
-MAX_ITER = 3000
-ALPHA = 0.047
-BETA_1 = 0.022
+MAX_ITER = 3500
+ALPHA = 0.066
+BETA_1 = 0.058
 LAMBDA_ = 0.0
-BATCH_SIZE = 16
-OPTIMIZATION = 'adam'
+BATCH_SIZE = 128
+OPTIMIZATION = 'rmsprop'
 EARLY_STOPPING = False
 DECAY = False
 
@@ -174,9 +174,11 @@ if __name__ == '__main__':
 	numerics_df = get_numerics(df)
 	houses = get_houses_list(df)
 	df['Hogwarts House'].replace(houses, [0, 1, 2, 3], inplace=True)
+	normalized_df = df.copy()
+	normalized_df = get_mean_normalized(normalized_df, numerics_df)
 	for column in numerics_df.columns:
 		if df[column].isnull().values.any():
-			abs_z_score = df[column].abs()
+			abs_z_score = normalized_df[column].abs()
 			outliers =  abs_z_score > 3
 			outliers = np.asarray(abs_z_score[outliers])
 			if len(outliers) > 0:

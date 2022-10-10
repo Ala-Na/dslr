@@ -69,12 +69,15 @@ if __name__ == '__main__':
 	to_drop = ['Index', 'Hogwarts House', 'Arithmancy', 'Care of Magical Creatures', 'Defense Against the Dark Arts', 'Birthday', 'Best Hand', 'First Name', 'Last Name']
 	df = df.drop(to_drop, axis=1)
 	numerics_df = get_numerics(df)
+	normalized_df = df.copy()
+	normalized_df = get_mean_normalized(normalized_df, numerics_df)
 	for column in numerics_df.columns:
 		if df[column].isnull().values.any():
-			abs_z_score = df[column].abs()
+			abs_z_score = normalized_df[column].abs()
 			outliers =  abs_z_score > 3
 			outliers = np.asarray(abs_z_score[outliers])
 			if len(outliers) > 0:
+				print("Feature {} has {} outliers".format(column, len(outliers)))
 				df[column].fillna(value=df[column].median(), inplace=True)
 			else:
 				df[column].fillna(value=df[column].mean(), inplace=True)

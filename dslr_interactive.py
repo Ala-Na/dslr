@@ -88,6 +88,7 @@ if __name__=="__main__":
 		os.system("python3 describe.py " + inp)
 		inp = input("\nPress enter to clear...")
 		os.system('clear')
+		scrollText("\nYou write the file \033[01mdescribe.py\033[0m. It takes a dataset as argument.\n")
 		print("Please enter the file path to the dataset you wish to analyze:")
 		print("\033[03mAvailable: datasets/dataset_train.csv or datasets/dataset_test.csv")
 		print("To pass, enter 'pass'\033[0m\n")
@@ -149,12 +150,12 @@ if __name__=="__main__":
 	if expl == 'yes':
 		scrollText("\nSomeone barge into the headmistress study: \nA student accidently transformed another kid into porridge.\n")
 		scrollText("She needs to take care of it, and leave quickly.\n")
-		scrollText("Do you wish to wait for her and continue the explanations ?\n")
+		scrollText("\nDo you wish to wait for her and continue the explanations ?\n")
 		scrollText("\033[03mEnter 'yes' and informations will be displayed.\n")
 		scrollText("Enter 'no' and only results will be showed.\033[0m\n\n")
 	else:
 		scrollText("\nMcGonagall come back to her office. She asks you if everything is fine.\n")
-		scrollText("Do you wish to explains to her what you are doing ?\n")
+		scrollText("\nDo you wish to explains to her what you are doing ?\n")
 		scrollText("\033[03mEnter 'yes' and informations will be displayed.\n")
 		scrollText("Enter 'no' and only results will be showed.\033[0m\n\n")
 
@@ -171,12 +172,12 @@ if __name__=="__main__":
 	os.system('clear')
 
 	if expl == 'yes' and new_expl == 'no':
-		scrollText("Having a Sorting Hat is more urgent than waiting for the headmistress. \nYou don't wait for her.\n")
+		scrollText("Having a Sorting Hat is more urgent than waiting for the headmistress. \nYou don't wait for her.\n\n")
 	elif expl == 'no' and new_expl == 'no':
-		scrollText("Nah. Even though the headmistress been nothing but respectful to you, you \ndon't like how wizards call you 'muggle'.\n")
+		scrollText("Nah. Even though the headmistress been nothing but respectful to you, you \ndon't like how wizards call you 'muggle'.\n\n")
 
 	scrollText("You write the file \033[01mlogreg_train.py\033[0m. It takes the dataset to train on as argument.\n\n")
-	scrollText("\n\033[01mPlease enter the file path to the dataset you wish to train on:\033[0m\n")
+	scrollText("\033[01mPlease enter the file path to the dataset you wish to train on:\033[0m\n")
 	scrollText("\033[03mAvailable: datasets/dataset_train.csv\n")
 	scrollText("To pass, enter 'pass'\033[0m\n\n")
 
@@ -199,7 +200,7 @@ if __name__=="__main__":
 
 	scrollText("You saved the weights of your model in \033[03mthetas.npz\033[0m file.\n\n")
 	scrollText("You write the file \033[01mlogreg_predict.py\033[0m. \nIt takes the dataset to predict and the weights' file as arguments.\n\n")
-	scrollText("\n\033[01mPlease enter the file path to the dataset you wish to perform prediction on:\033[0m\n")
+	scrollText("\033[01mPlease enter the file path to the dataset you wish to perform prediction on:\033[0m\n")
 	scrollText("\033[03mAvailable: datasets/dataset_test.csv\n")
 	scrollText("To pass, enter 'pass'\033[0m\n\n")
 	dataset = input("--> ")
@@ -224,10 +225,15 @@ if __name__=="__main__":
 			scrollText("To pass, enter 'pass'\033[0m\n\n")
 			dataset = input("--> ")
 
+	if new_expl == 'no':
+		scrollText("File \033[01mhouse.csv\033[0m is now created.\n")
+
 	input("\nPress enter to continue ...\n")
 	os.system("clear")
 
+	playsound('music.mp3', False)
 	scrollText("Congratulations !\nYou finished building a working Sorting Hat algorithm.\n\n")
+	time.sleep(2)
 	scrollText("\n\t\t\t\033[01mTHE END\n\n\033[0m")
 
 	input("Press enter to continue ...\n")
