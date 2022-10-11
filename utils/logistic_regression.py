@@ -63,7 +63,7 @@ class LogisticRegression():
         elif init == 'he':
             weights = np.random.randn(shape, 1) * np.sqrt(2 / 1) # would make more sense in a NN
         bias = np.zeros((1, 1))
-        return np.concatenate([weights, bias])
+        return np.concatenate([bias, weights])
 
     def l2(self) -> np.ndarray:
         ''' Perform L2 regularization '''
