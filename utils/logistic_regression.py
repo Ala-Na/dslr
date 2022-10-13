@@ -106,6 +106,7 @@ class LogisticRegression():
             return None
         m = y.shape[0]
         X = np.insert(x, 0, 1.0, axis=1)
+        print("Thetas:", self.theta.reshape(1, -1))
         y_hat = 1 / (1 + np.exp(-X @ self.theta))
         theta_cp = self.theta.copy()
         theta_cp[0][0] = 0
@@ -146,7 +147,7 @@ class LogisticRegression():
     def update_with_momentum(self, gradients: np.ndarray) -> np.ndarray:
         ''' Perform parameters (theta) update with momentum '''
         self.velocity = self.beta_1 * self.velocity \
-            + (1 - self.beta_1) * gradients
+            + (1 - self.beta_1) * (gradients**2)
         return self.alpha * self.velocity
 
     def update_with_rmsprop(self, gradients: np.ndarray)-> np.ndarray:
@@ -161,7 +162,7 @@ class LogisticRegression():
             + (1 - self.beta_1) * gradients
         corrected_velocity = self.velocity / (1 -  self.beta_1**time)
         self.step_size = self.beta_2 * self.step_size \
-            + (1 - self.beta_2) * gradients
+            + (1 - self.beta_2) * (gradients**2)
         corrected_step_size = self.step_size / (1 - self.beta_2**time)
         return self.alpha \
             * (corrected_velocity/(np.sqrt(corrected_step_size) + self.epsilon))
@@ -229,6 +230,7 @@ class LogisticRegression():
             batch_size = x.shape[1]
         # Iterate over epochs
         for i in range(0, self.max_iter):
+            print("Epoch ", i)
             # Mini_batches are created
             mini_batches = self.create_mini_batches(x, y, batch_size)
             for x_batch, y_batch in mini_batches:

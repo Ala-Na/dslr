@@ -10,7 +10,7 @@ from utils.array_manip import *
 from utils.one_vs_all import *
 import random
 
-MAX_ITER = 1000
+MAX_ITER = 100
 
 def getRandomHyperparameters():
 	alpha = random.uniform(0.0001, 0.1)
@@ -71,6 +71,7 @@ if __name__ == '__main__':
 	for j in range(100):
 		print("Experiment with random hyperparameters number {}".format(j + 1))
 		alpha, beta_1, batch_size, lambda_, optimization, early_stopping, decay = getRandomHyperparameters()
+		print("alpha ", alpha, "| beta1 ", beta_1, "| batch_size ", batch_size, "| lambda ", lambda_, "| opt ", optimization, "| early stop ", early_stopping, "| decay ", decay)
 		algo = OneVsAll(x_train.shape[1], max_y_val=4, alpha=alpha, max_iter=MAX_ITER, \
 		initialization='he', lambda_=lambda_, optimization=optimization, decay=decay, \
 		early_stopping=early_stopping, beta_1=beta_1)
