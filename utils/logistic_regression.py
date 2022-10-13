@@ -37,6 +37,7 @@ class LogisticRegression():
         self.original_alpha = alpha
         self.beta_1 = beta_1
         self.beta_2 = beta_2
+        self.epsilon = epsilon
         self.max_iter= max_iter
         self.regularization = regularization
         self.optimization = optimization

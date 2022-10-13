@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 	# To open dataframe
 	if os.path.isfile(file):
-		os.remove('houses.csv')
+		os.remove(file)
 	df = pd.DataFrame(columns=['result', 'alpha', 'beta_1', \
 	'batch_size', 'lambda', 'early_stopping', 'optimization', 'decay'])
 
