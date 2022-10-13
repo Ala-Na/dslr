@@ -19,10 +19,10 @@ import os
 
 # Hyperparameters values
 MAX_ITER = 3500
-ALPHA = 0.066
-BETA_1 = 0.058
+ALPHA = 0.042
+BETA_1 = 0.071
 LAMBDA_ = 0.0
-BATCH_SIZE = 128
+BATCH_SIZE = 256
 OPTIMIZATION = 'rmsprop'
 EARLY_STOPPING = False
 DECAY = False
