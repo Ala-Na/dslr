@@ -153,7 +153,7 @@ class LogisticRegression():
         ''' Perform parameters (theta) update with RMSprop'''
         self.step_size = self.beta_2 * self.step_size \
             + (1 - self.beta_2) * (gradients**2)
-        return self.alpha * gradients / (np.sqrt(gradients) + self.epsilon)
+        return self.alpha * gradients / (np.sqrt(self.step_size) + self.epsilon)
 
     def update_with_adam(self, gradients: np.ndarray, time: int) -> None:
         ''' Perform parameters (theta) update with Adam '''
