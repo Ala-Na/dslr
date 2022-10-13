@@ -169,11 +169,11 @@ class LogisticRegression():
         ''' Call corresponding update function.
         Perform early stopping if option is activated. '''
         gradients = self.cost_derivative(x, y)
-        if self.regularization == 'momentum':
+        if self.optimization == 'momentum':
             diff = self.update_with_momentum(gradients)
-        elif self.regularization == 'rmsprop':
+        elif self.optimization == 'rmsprop':
             diff = self.update_with_rmsprop(gradients)
-        elif self.regularization == 'adam':
+        elif self.optimization == 'adam':
             diff = self.update_with_adam(gradients, time)
         else:
             diff = self.update_without_optimization(gradients)
