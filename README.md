@@ -100,15 +100,16 @@ It trains the One-Vs-All model with randomly chosen hyperparameters and output t
 At the end of the program, median or mode of hyperparameters values helpful to reach best accuracy are displayed.
 
 ## Logistic regression details
+A lot of available options make more sense for neural networks than linear regression. They can still help reaching faster optimal parameters, reduce overfitting, ... But their implementation was mainly to understand their logic.
 ### Available optimizations
-- RMSprop
-- Momentum
-- Adam
+- RMSprop (more neural network oriented)
+- Momentum (more neural network oriented)
+- Adam (more neural network oriented)
 - Learning rate decay
 - Mini-batch or stochastic gradient descent
 
 ### Available regularizations
-- L2 regularization
+- L2 regularization (ridge linear regression)
 - Early stopping
 
 ## Available weights initializations
@@ -119,8 +120,8 @@ At the end of the program, median or mode of hyperparameters values helpful to r
 ### Available hyperparameters
 - Max iter = Number of epochs
 - Alpha = Learning rate
-- Beta 1 = Value for momentum / Adam
-- Beta 2 = Value for RMSprop / Adam
+- Beta 1 = Value for momentum / Adam (more neural network oriented)
+- Beta 2 = Value for RMSprop / Adam (more neural network oriented)
 - Lambda = Value for L2 regularization
 - Decay = Learning rate decay
 - Decay interval = Interval to perform learning rate decay
