@@ -55,7 +55,7 @@ The goal was to find the two most similars subjects.
 With ```-expl``` argument, explanations from the interactive scenario are displayed. 
 
 <p align='center'>
- <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900432-d42f949e-4c10-4aec-882e-ffd65df64e54.png' alt='animated'>
+ <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900436-d0afbc0f-bdd8-42e8-933c-7a5409bf481d.png' alt='animated'>
 </p>
 <p align='center'>
  <i align='center'>Project screen shot</i>
@@ -69,7 +69,7 @@ The goal was to choose useful features to train our model on.
 With ```-expl``` argument, explanations from the interactive scenario are displayed. 
 
 <p align='center'>
- <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900436-d0afbc0f-bdd8-42e8-933c-7a5409bf481d.png' alt='animated'>
+ <img width= '700' align='center' src='https://user-images.githubusercontent.com/67599180/194900432-d42f949e-4c10-4aec-882e-ffd65df64e54.png' alt='animated'>
 </p>
 <p align='center'>
  <i align='center'>Project screen shot</i>
