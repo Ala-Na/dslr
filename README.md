@@ -12,7 +12,7 @@ A 42 school project, from the machine learning / artificial intelligence branch.
 
 ## Programs
 
-### 🧙‍♀️ dslr_interative.py
+### 🧙‍♀️ dslr_interactive.py
 ```python3 dslr_interactive.py```
 
 A terminal interactive scenario involving the famous headmistress, McGonagall, and performing all programs presents in this file (except for ```logreg_finetune.py```) . The user can choose to explains what is going on to the headmistress, which will display partial explanations for each program.
